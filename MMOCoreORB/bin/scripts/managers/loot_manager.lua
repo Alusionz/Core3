@@ -41,22 +41,22 @@
 --which carries forward this exception.
 
 --Chance divisor for attribute bonus modifiers
-levelChance = 100
+levelChance = 10000
 
 --Chance dividend for attribute bonus modifiers
-baseChance = 100
-yellowChance = 1000
-exceptionalChance = 100000
-legendaryChance = 1000000
+baseChance = 10000
+yellowChance = 20000
+exceptionalChance = 14000
+legendaryChance = 33333
 
 --Multiplier values for bonus modifiers
 baseModifier = 1
-yellowModifier = 2
-exceptionalModifier = 8
-legendaryModifier = 9
+yellowModifier = 10
+exceptionalModifier = 20
+legendaryModifier = 25
 
 --The chance for random skill mods to be on looted weapons/wearables
-skillModChance = 1000 -- 1 in 1000
+skillModChance = 1 -- skillModChance = 10 == 1 in 10
 
 -- Dot Distribution chance by DOT type. They must equate to 1.0
 poisonDotChance = 0.50
@@ -70,17 +70,17 @@ mindDotChance = 0.15
 
 -- Value ranges for random dots on looted weapons (chance is set individually on the loot items)
 randomDotAttribute = {0, 8} -- See CreatureAttributes.h in src for numbers.
-randomDotStrength = {10, 100} -- poison x1.5, disease x0.5
-randomDotDuration = {30, 120} -- disease x4.0, fire x1.5
-randomDotPotency = {1, 50}
-randomDotUses = {250, 4999}
+randomDotStrength = {80, 100} -- poison x1.5, disease x0.5
+randomDotDuration = {300, 1200} -- disease x4.0, fire x1.5
+randomDotPotency = {50, 100}
+randomDotUses = {1250, 14999}
 
 -- Modifier applied to min/max junk values found in loot item lua
 junkValueModifier = 5;
 
 lootableArmorAttachmentStatMods = {
-	"aim",
-	"alert",
+	--"aim",
+	--"alert",
 	"berserk",
 	"blind_defense",
 	"block",
@@ -91,7 +91,7 @@ lootableArmorAttachmentStatMods = {
 	"carbine_speed",
 	"combat_bleeding_defense",
 	"counterattack",
-	"cover",
+	--"cover",
 	"dizzy_defense",
 	"dodge",
 	"droid_find_chance",
@@ -152,8 +152,8 @@ lootableArmorAttachmentStatMods = {
 }
 
 lootableClothingAttachmentStatMods = {
-	"aim",
-	"alert",
+	--"aim",
+	--"alert",
 	"armor_assembly",
 	"armor_experimentation",
 	"armor_repair",
@@ -222,29 +222,29 @@ lootableClothingAttachmentStatMods = {
 	"onehandmelee_damage",
 	"onehandmelee_speed",
 	"pistol_accuracy",
-	"pistol_aim",
+	--"pistol_aim",
 	"pistol_hit_while_moving",
 	"pistol_speed",
 	"pistol_accuracy_while_standing",
 	"polearm_accuracy",
 	"polearm_speed",
 	"posture_change_down_defense",
-	"posture_change_up_defense",
+	--"posture_change_up_defense",
 	"ranged_defense",
-	"rescue",
+	--"rescue",
 	"resistance_bleeding",
 	"resistance_disease",
 	"resistance_fire",
 	"resistance_poison",
 	"rifle_accuracy",
-	"rifle_aim",
+	--"rifle_aim",
 	"rifle_hit_while_moving",
 	"rifle_speed",
 	"slope_move",
 	"steadyaim",
 	"stored_pets",
 	"structure_assembly",
-	"structure_complexity",
+	--"structure_complexity",
 	"structure_experimentation",
 	"stun_defense",
 	"surveying",
@@ -260,7 +260,7 @@ lootableClothingAttachmentStatMods = {
 	"unarmed_accuracy",
 	"unarmed_damage",
 	"unarmed_speed",
-	"volley",
+	--"volley",
 	"warcry",
 	"weapon_assembly",
 	"weapon_experimentation",
