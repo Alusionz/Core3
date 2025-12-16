@@ -76,8 +76,16 @@ void LightsaberCrystalComponentImplementation::generateCrystalStats() {
 	int maxStat = crystalData->getMaxHitpoints();
 
 	setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
+bool isPowerCrystal = (color == 31);
 
-	if (color == 31) {
+	if (!isPowerCrystal){
+		//check for merged color crystal marker
+		if(getCustomizationVariable("merged_power_stats")== 1){
+			isPowerCrystal = true;
+		}
+	} 
+
+	if (isPowerCrystal) {
 		int minStat = crystalData->getMinDamage();
 		int maxStat = crystalData->getMaxDamage();
 
