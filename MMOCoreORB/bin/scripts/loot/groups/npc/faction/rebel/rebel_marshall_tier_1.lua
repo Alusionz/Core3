@@ -9,7 +9,7 @@ rebel_marshall_tier_1 = {
 		{groupTemplate = "clothing_attachments", weight = 200000},
 		{groupTemplate = "holocron_dark", weight = 400000},
 		{groupTemplate = "holocron_light", weight = 400000},
-		{groupTemplate = "junk", weight = 2950000},
+		--{groupTemplate = "junk", weight = 2950000},
 		{groupTemplate = "melee_weapons", weight = 700000},
 		{groupTemplate = "ranged_weapons", weight = 3500000},
 		{groupTemplate = "wearables_common", weight = 400000},

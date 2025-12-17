@@ -9,7 +9,7 @@ imperial_stormtrooper_tier_1 = {
 		{groupTemplate = "armor_attachments", weight = 100000},
 		{groupTemplate = "clothing_attachments", weight = 100000},
 		{groupTemplate = "color_crystals", weight = 100000},
-		{groupTemplate = "junk", weight = 1800000},
+		--{groupTemplate = "junk", weight = 1800000},
 		{groupTemplate = "loot_kit_parts", weight = 1000000},
 		{groupTemplate = "stormtrooper_common", weight = 250000},
 		{groupTemplate = "tailor_components", weight = 900000},

@@ -9,7 +9,7 @@ imperial_tier_1 = {
 		{groupTemplate = "armor_attachments", weight = 100000},
 		{groupTemplate = "clothing_attachments", weight = 100000},
 		{groupTemplate = "color_crystals", weight = 100000},
-		{groupTemplate = "junk", weight = 2500000},
+		--{groupTemplate = "junk", weight = 2500000},
 		{groupTemplate = "loot_kit_parts", weight = 950000},
 		{groupTemplate = "tailor_components", weight = 700000},
 		{groupTemplate = "weapons_all", weight = 2800000},

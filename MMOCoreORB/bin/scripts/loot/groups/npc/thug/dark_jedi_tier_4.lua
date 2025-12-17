@@ -7,11 +7,11 @@ dark_jedi_tier_4 = {
 	lootItems = {
 		{groupTemplate = "armor_attachments", weight = 900000},
 		{groupTemplate = "clothing_attachments", weight = 900000},
-		{groupTemplate = "color_crystals", weight = 1000000},
+		{groupTemplate = "color_crystals", weight = 1300000},
 		{groupTemplate = "holocron_dark", weight = 400000},
 		{groupTemplate = "holocron_light", weight = 400000},
 		{groupTemplate = "melee_weapons", weight = 1100000},
-		{groupTemplate = "power_crystals", weight = 300000},
+		--{groupTemplate = "power_crystals", weight = 300000},
 		{groupTemplate = "ranged_weapons", weight = 3500000},
 		{groupTemplate = "wearables_rare", weight = 700000},
 		{groupTemplate = "resource_chemical", weight = 100000},

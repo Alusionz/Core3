@@ -11,7 +11,7 @@ mtn_clan_tier_1 = {
 		{groupTemplate = "junk", weight = 1500000},
 		{groupTemplate = "loot_kit_parts", weight = 1100000},
 		{groupTemplate = "melee_weapons", weight = 1500000},
-		{groupTemplate = "power_crystals", weight = 250000},
+		--{groupTemplate = "power_crystals", weight = 250000},
 		{groupTemplate = "ranged_weapons", weight = 1900000},
 		{groupTemplate = "tailor_components", weight = 300000},
 		{groupTemplate = "wearables_common", weight = 1500000},

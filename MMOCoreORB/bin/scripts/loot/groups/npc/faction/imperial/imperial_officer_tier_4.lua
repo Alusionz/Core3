@@ -10,7 +10,7 @@ imperial_officer_tier_4 = {
 		{groupTemplate = "clothing_attachments", weight = 100000},
 		{groupTemplate = "color_crystals", weight = 100000},
 		{groupTemplate = "imperial_officer_common", weight = 300000},
-		{groupTemplate = "junk", weight = 5600000},
+		--{groupTemplate = "junk", weight = 5600000},
 		{groupTemplate = "weapons_all", weight = 1000000},
 		{groupTemplate = "wearables_all", weight = 900000},
 		{groupTemplate = "resource_gemstone", weight = 100000},

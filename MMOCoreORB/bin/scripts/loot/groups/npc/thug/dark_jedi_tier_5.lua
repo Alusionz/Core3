@@ -11,7 +11,7 @@ dark_jedi_tier_5 = {
 		{groupTemplate = "holocron_dark", weight = 550000},
 		{groupTemplate = "holocron_light", weight = 500000},
 		{groupTemplate = "melee_weapons", weight = 1200000},
-		{groupTemplate = "power_crystals", weight = 500000},
+		{groupTemplate = "color_crystals", weight = 500000},
 		{groupTemplate = "ranged_weapons", weight = 3600000},
 		{groupTemplate = "resource_chemical", weight = 50000},
 		{groupTemplate = "resource_gemstone", weight = 50000},

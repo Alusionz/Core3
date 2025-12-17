@@ -10,7 +10,7 @@ mtn_clan_tier_3 = {
 		{groupTemplate = "color_crystals", weight = 500000},
 		{groupTemplate = "junk", weight = 1400000},
 		{groupTemplate = "melee_weapons", weight = 2500000},
-		{groupTemplate = "power_crystals", weight = 450000},
+		--{groupTemplate = "power_crystals", weight = 450000},
 		{groupTemplate = "ranged_weapons", weight = 2800000},
 		{groupTemplate = "tailor_components", weight = 400000},
 		{groupTemplate = "wearables_uncommon", weight = 400000},

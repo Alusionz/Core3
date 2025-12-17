@@ -10,7 +10,7 @@ force_tier_4 = {
 		{groupTemplate = "color_crystals", weight = 1400000},
 		{groupTemplate = "junk", weight = 3800000},
 		{groupTemplate = "melee_weapons", weight = 1300000},
-		{groupTemplate = "power_crystals", weight = 400000},
+		--{groupTemplate = "power_crystals", weight = 400000},
 		{groupTemplate = "wearables_all", weight = 900000},
 		{groupTemplate = "resource_chemical", weight = 100000},
 		{groupTemplate = "resource_gemstone", weight = 100000},

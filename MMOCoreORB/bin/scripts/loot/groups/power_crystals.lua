@@ -1,5 +1,10 @@
 power_crystals = {
-	{itemTemplate = "force_crystal_good", weight = 5000000},
-	{itemTemplate = "force_crystal_quality", weight = 5000000}
+	description = "",
+	minimumLevel = 0,
+	maximumLevel = -1,
+	lootItems = {
+		{itemTemplate = "force_power_crystal", weight = 10000000}
+	}
 }
+
 addLootGroupTemplate("power_crystals", power_crystals)

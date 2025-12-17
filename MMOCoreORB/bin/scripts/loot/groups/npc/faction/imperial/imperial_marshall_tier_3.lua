@@ -11,7 +11,7 @@ imperial_marshall_tier_3 = {
 		{groupTemplate = "color_crystals", weight = 300000},
 		{groupTemplate = "holocron_dark", weight = 100000},
 		{groupTemplate = "holocron_light", weight = 100000},
-		{groupTemplate = "junk", weight = 3100000},
+		--{groupTemplate = "junk", weight = 3100000},
 		{groupTemplate = "power_crystals", weight = 250000},
 		{groupTemplate = "weapons_all", weight = 3600000},
 		{groupTemplate = "wearables_all", weight = 400000},

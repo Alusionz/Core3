@@ -9,7 +9,7 @@ kunga_tribe_tier_3 = {
 		{groupTemplate = "clothing_attachments", weight = 400000},
 		{groupTemplate = "junk", weight = 2800000},
 		{groupTemplate = "loot_kit_parts", weight = 2400000},
-		{groupTemplate = "power_crystals", weight = 300000},
+		{groupTemplate = "color_crystals", weight = 300000},
 		{groupTemplate = "wearables_all", weight = 3100000},
 		{groupTemplate = "resource_creature", weight = 450000},
 		{groupTemplate = "resource_water", weight = 150000},

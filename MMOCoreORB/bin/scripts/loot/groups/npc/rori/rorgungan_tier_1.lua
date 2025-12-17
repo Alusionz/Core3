@@ -9,7 +9,7 @@ rorgungan_tier_1 = {
 		{groupTemplate = "gungan_common", weight = 1300000},
 		{groupTemplate = "junk", weight = 3700000},
 		{groupTemplate = "loot_kit_parts", weight = 850000},
-		{groupTemplate = "power_crystals", weight = 0},
+		--{groupTemplate = "power_crystals", weight = 0},
 		{groupTemplate = "tailor_components", weight = 200000},
 		{groupTemplate = "wearables_common", weight = 600000},
 		{groupTemplate = "resource_creature", weight = 750000},

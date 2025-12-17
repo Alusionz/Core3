@@ -5,7 +5,7 @@ sulfur_lake_pirate_tier_1 = {
 	minimumLevel = 0,
 	maximumLevel = -1,
 	lootItems = {
-		{groupTemplate = "junk", weight = 3200000},
+		--{groupTemplate = "junk", weight = 3200000},
 		{groupTemplate = "loot_kit_parts", weight = 1250000},
 		{groupTemplate = "melee_weapons", weight = 600000},
 		{groupTemplate = "ranged_weapons", weight = 1900000},

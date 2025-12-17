@@ -9,7 +9,7 @@ rebel_tier_1 = {
 		{groupTemplate = "armor_attachments", weight = 100000},
 		{groupTemplate = "clothing_attachments", weight = 100000},
 		{groupTemplate = "color_crystals", weight = 100000},
-		{groupTemplate = "junk", weight = 3050000},
+		--{groupTemplate = "junk", weight = 3050000},
 		{groupTemplate = "weapons_all", weight = 3400000},
 		{groupTemplate = "wearables_all", weight = 1200000},
 		{groupTemplate = "resource_gemstone", weight = 250000},
