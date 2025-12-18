@@ -80,8 +80,9 @@ bool isPowerCrystal = (color == 31);
 
 	if (!isPowerCrystal){
 		//check for merged color crystal marker
-		if(TangibleObjectImplementation::getCustomizationVariable("merged_power_stats")== 1){
-			isPowerCrystal = true;
+		//if(TangibleObjectImplementation::getCustomizationVariable("merged_power_stats")== 1){
+		if(customizationVariable.get((uint8)50) == 1){
+		isPowerCrystal = true;
 		}
 	} 
 
