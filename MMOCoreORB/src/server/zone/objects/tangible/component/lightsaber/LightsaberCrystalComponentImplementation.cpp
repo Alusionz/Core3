@@ -76,15 +76,9 @@ void LightsaberCrystalComponentImplementation::generateCrystalStats() {
 	int maxStat = crystalData->getMaxHitpoints();
 
 	setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
-bool isPowerCrystal = (color == 31);
 
-	if (!isPowerCrystal){
-		//check for merged color crystal marker
-		//if(TangibleObjectImplementation::getCustomizationVariable("merged_power_stats")== 1){
-		if(customizationVariable.get((uint8)50) == 1){
-		isPowerCrystal = true;
-		}
-	} 
+	// All tuned crystals get full power stats, regardless of color
+	bool isPowerCrystal = true;
 
 	if (isPowerCrystal) {
 		int minStat = crystalData->getMinDamage();
@@ -145,49 +139,50 @@ void LightsaberCrystalComponentImplementation::validateCrystalStats() {
 	if (getMaxCondition() > maxStat || getMaxCondition() < minStat)
 		setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
 
-	if (color == 31) {
-		minStat = crystalData->getMinDamage();
-		maxStat = crystalData->getMaxDamage();
+	// All tuned crystals get full power stats — no color check
+	// Removed original "if (color == 31)" block
 
-		if (damage > maxStat || damage < minStat)
-			damage = getRandomizedStat(minStat, maxStat, itemLevel);
+	minStat = crystalData->getMinDamage();
+	maxStat = crystalData->getMaxDamage();
 
-		minStat = crystalData->getMinHealthSac();
-		maxStat = crystalData->getMaxHealthSac();
+	if (damage > maxStat || damage < minStat)
+		damage = getRandomizedStat(minStat, maxStat, itemLevel);
 
-		if (sacHealth > maxStat || sacHealth < minStat)
-			sacHealth = getRandomizedStat(minStat, maxStat, itemLevel);
+	minStat = crystalData->getMinHealthSac();
+	maxStat = crystalData->getMaxHealthSac();
 
-		minStat = crystalData->getMinActionSac();
-		maxStat = crystalData->getMaxActionSac();
+	if (sacHealth > maxStat || sacHealth < minStat)
+		sacHealth = getRandomizedStat(minStat, maxStat, itemLevel);
 
-		if (sacAction > maxStat || sacAction < minStat)
-			sacAction = getRandomizedStat(minStat, maxStat, itemLevel);
+	minStat = crystalData->getMinActionSac();
+	maxStat = crystalData->getMaxActionSac();
 
-		minStat = crystalData->getMinMindSac();
-		maxStat = crystalData->getMaxMindSac();
+	if (sacAction > maxStat || sacAction < minStat)
+		sacAction = getRandomizedStat(minStat, maxStat, itemLevel);
 
-		if (sacMind > maxStat || sacMind < minStat)
-			sacMind = getRandomizedStat(minStat, maxStat, itemLevel);
+	minStat = crystalData->getMinMindSac();
+	maxStat = crystalData->getMaxMindSac();
 
-		minStat = crystalData->getMinWoundChance();
-		maxStat = crystalData->getMaxWoundChance();
+	if (sacMind > maxStat || sacMind < minStat)
+		sacMind = getRandomizedStat(minStat, maxStat, itemLevel);
 
-		if (woundChance > maxStat || woundChance < minStat)
-			woundChance = getRandomizedStat(minStat, maxStat, itemLevel);
+	minStat = crystalData->getMinWoundChance();
+	maxStat = crystalData->getMaxWoundChance();
 
-		float minFloatStat = crystalData->getMinForceCost();
-		float maxFloatStat = crystalData->getMaxForceCost();
+	if (woundChance > maxStat || woundChance < minStat)
+		woundChance = getRandomizedStat(minStat, maxStat, itemLevel);
 
-		if (floatForceCost > maxFloatStat || floatForceCost < minFloatStat)
-			floatForceCost = getRandomizedStat(minFloatStat, maxFloatStat, itemLevel);
+	float minFloatStat = crystalData->getMinForceCost();
+	float maxFloatStat = crystalData->getMaxForceCost();
 
-		minFloatStat = crystalData->getMinAttackSpeed();
-		maxFloatStat = crystalData->getMaxAttackSpeed();
+	if (floatForceCost > maxFloatStat || floatForceCost < minFloatStat)
+		floatForceCost = getRandomizedStat(minFloatStat, maxFloatStat, itemLevel);
 
-		if (attackSpeed > maxFloatStat || attackSpeed < minFloatStat)
-			attackSpeed = Math::getPrecision(getRandomizedStat(minFloatStat, maxFloatStat, itemLevel), 2);
-	}
+	minFloatStat = crystalData->getMinAttackSpeed();
+	maxFloatStat = crystalData->getMaxAttackSpeed();
+
+	if (attackSpeed > maxFloatStat || attackSpeed < minFloatStat)
+		attackSpeed = Math::getPrecision(getRandomizedStat(minFloatStat, maxFloatStat, itemLevel), 2);
 }
 
 int LightsaberCrystalComponentImplementation::getCrystalQuality() {

@@ -50,7 +50,7 @@ SaberSlash1Command = {
 	healthCostMultiplier = 0,
 	actionCostMultiplier = 0,
 	mindCostMultiplier = 0,
-	forceCostMultiplier = 1.0,
+	--forceCostMultiplier = 1.0,
 	visMod = 25,
 
 	dotEffects = {

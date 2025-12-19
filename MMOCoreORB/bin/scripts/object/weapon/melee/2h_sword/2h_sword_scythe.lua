@@ -115,10 +115,10 @@ object_weapon_melee_2h_sword_2h_sword_scythe = object_weapon_melee_2h_sword_shar
 	maxRange = 6,
 	maxRangeAccuracy = 10,
 
-	minDamage = 40,
-	maxDamage = 210,
+	minDamage = 240,
+	maxDamage = 410,
 
-	attackSpeed = 4.7,
+	attackSpeed = 2.5,
 
 	woundsRatio = 30,
 
