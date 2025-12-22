@@ -442,7 +442,7 @@ void LightsaberCrystalComponentImplementation::tuneCrystal(CreatureObject* playe
 
 		setCustomObjectName(tuneName, true);
 
-		TangibleObjectImplementation::sendDeltaUpdates();
+		SceneObjectImplementation::sendDeltaUpdates();
 
 		player->notifyObservers(ObserverEventType::TUNEDCRYSTAL, _this.getReferenceUnsafeStaticCast(), 0);
 		player->sendSystemMessage("@jedi_spam:crystal_tune_success");
