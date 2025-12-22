@@ -409,28 +409,27 @@ void LightsaberCrystalComponentImplementation::tuneCrystal(CreatureObject* playe
 	if(!player->hasSkill("force_title_jedi_rank_01") || !hasPlayerAsParent(player)) {
 		return;
 	}
-
-	if (getColor() == 31) {
-		ManagedReference<PlayerObject*> ghost = player->getPlayerObject();
-
-		if (ghost == nullptr)
+	ManagedReference<PlayerObject*> ghost = player->getPlayerObject();
+	if (ghost == nullptr)
 			return;
 
-		int tuningCost = 100 + (quality * 75);
-
-		if (ghost->getForcePower() <= tuningCost) {
-			player->sendSystemMessage("@jedi_spam:no_force_power");
-			return;
-		}
-
-		ghost->setForcePower(ghost->getForcePower() - tuningCost);
-	}
+	int tuningCost = 100 + (quality * 75);
+	if (ghost->getForcePower() <= tuningCost) {
+		player->sendSystemMessage("@jedi_spam:no_force_power");
+		return;
+	}		
+	ghost->setForcePower(ghost->getForcePower() - tuningCost);
+	
 
 	if (ownerID == 0) {
 		validateCrystalStats();
 
 		ownerID = player->getObjectID();
 		ownerName = player->getDisplayedName();
+
+		//Enable color crystal as power crystal
+		customizationVariables.put((uint8)50, (int16)1); //set merged flag
+		generateCrystalStats();	//Regenerate crystal stats
 
 		// Color code is lime green.
 		String tuneName = StringIdManager::instance()->getStringId(objectName.getFullPath().hashCode()).toString();
@@ -442,6 +441,9 @@ void LightsaberCrystalComponentImplementation::tuneCrystal(CreatureObject* playe
 			tuneName = "\\#00FF00" + tuneName + " (tuned)\\#.";
 
 		setCustomObjectName(tuneName, true);
+
+		sendDeltaUpdates();
+
 		player->notifyObservers(ObserverEventType::TUNEDCRYSTAL, _this.getReferenceUnsafeStaticCast(), 0);
 		player->sendSystemMessage("@jedi_spam:crystal_tune_success");
 	}

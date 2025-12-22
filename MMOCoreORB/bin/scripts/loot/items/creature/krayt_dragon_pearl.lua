@@ -7,7 +7,7 @@ krayt_dragon_pearl = {
 	directObjectTemplate = "object/tangible/component/weapon/lightsaber/lightsaber_module_krayt_dragon_pearl.iff",
 	craftingValues = {
 		{"color",0,11,0},
-		{"merged_power_stats", 1, 1, 0},  -- custom marker (1 = apply power stats in C++)
+		{50, 1, 1, 0},  -- custom marker byte key 50 = 1
 	},
 	customizationStringNames = {},
 	customizationValues = {}

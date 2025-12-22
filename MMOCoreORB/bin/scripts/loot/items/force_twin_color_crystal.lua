@@ -5,7 +5,7 @@ force_twin_color_crystal = {
   directObjectTemplate = "object/tangible/component/weapon/lightsaber/lightsaber_module_color.iff",
   craftingValues = {
     {"color",0,11,0},  -- random color
-    {"merged_power_stats", 1, 1, 0},  -- custom marker (1 = apply power stats in C++)
+    {50, 1, 1, 0},  -- custom marker byte key 50 = 1
   },
 }
 addLootItemTemplate("force_twin_color_crystal", force_twin_color_crystal)

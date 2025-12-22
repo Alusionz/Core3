@@ -2183,6 +2183,10 @@ float CreatureObjectImplementation::getRunSpeed() {
 			}
 		}
 	}
+	if(isPlayerCreature()){
+		allowedSpeed *= 1.5f;
+
+	}
 
 	return allowedSpeed;
 }
