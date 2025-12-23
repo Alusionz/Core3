@@ -7,7 +7,6 @@ krayt_dragon_pearl = {
 	directObjectTemplate = "object/tangible/component/weapon/lightsaber/lightsaber_module_krayt_dragon_pearl.iff",
 	craftingValues = {
 		{"color",0,11,0},
-		{50, 1, 1, 0},  -- custom marker byte key 50 = 1
 	},
 	customizationStringNames = {},
 	customizationValues = {}

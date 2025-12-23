@@ -77,10 +77,8 @@ void LightsaberCrystalComponentImplementation::generateCrystalStats() {
 
 	setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
 
-	// All tuned crystals get full power stats, regardless of color
-	bool isPowerCrystal = true;
 
-	if (isPowerCrystal) {
+	if (getColor() == 31) {
 		int minStat = crystalData->getMinDamage();
 		int maxStat = crystalData->getMaxDamage();
 
@@ -139,50 +137,51 @@ void LightsaberCrystalComponentImplementation::validateCrystalStats() {
 	if (getMaxCondition() > maxStat || getMaxCondition() < minStat)
 		setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
 
-	// All tuned crystals get full power stats — no color check
-	// Removed original "if (color == 31)" block
+	if(getColor() == 31){
 
-	minStat = crystalData->getMinDamage();
-	maxStat = crystalData->getMaxDamage();
+		minStat = crystalData->getMinDamage();
+		maxStat = crystalData->getMaxDamage();
 
-	if (damage > maxStat || damage < minStat)
-		damage = getRandomizedStat(minStat, maxStat, itemLevel);
+		if (damage > maxStat || damage < minStat)
+			damage = getRandomizedStat(minStat, maxStat, itemLevel);
 
-	minStat = crystalData->getMinHealthSac();
-	maxStat = crystalData->getMaxHealthSac();
+		minStat = crystalData->getMinHealthSac();
+		maxStat = crystalData->getMaxHealthSac();
 
-	if (sacHealth > maxStat || sacHealth < minStat)
-		sacHealth = getRandomizedStat(minStat, maxStat, itemLevel);
+		if (sacHealth > maxStat || sacHealth < minStat)
+			sacHealth = getRandomizedStat(minStat, maxStat, itemLevel);
 
-	minStat = crystalData->getMinActionSac();
-	maxStat = crystalData->getMaxActionSac();
+		minStat = crystalData->getMinActionSac();
+		maxStat = crystalData->getMaxActionSac();
 
-	if (sacAction > maxStat || sacAction < minStat)
-		sacAction = getRandomizedStat(minStat, maxStat, itemLevel);
+		if (sacAction > maxStat || sacAction < minStat)
+			sacAction = getRandomizedStat(minStat, maxStat, itemLevel);
 
-	minStat = crystalData->getMinMindSac();
-	maxStat = crystalData->getMaxMindSac();
+		minStat = crystalData->getMinMindSac();
+		maxStat = crystalData->getMaxMindSac();
 
-	if (sacMind > maxStat || sacMind < minStat)
-		sacMind = getRandomizedStat(minStat, maxStat, itemLevel);
+		if (sacMind > maxStat || sacMind < minStat)
+			sacMind = getRandomizedStat(minStat, maxStat, itemLevel);
 
-	minStat = crystalData->getMinWoundChance();
-	maxStat = crystalData->getMaxWoundChance();
+		minStat = crystalData->getMinWoundChance();
+		maxStat = crystalData->getMaxWoundChance();
 
-	if (woundChance > maxStat || woundChance < minStat)
-		woundChance = getRandomizedStat(minStat, maxStat, itemLevel);
+		if (woundChance > maxStat || woundChance < minStat)
+			woundChance = getRandomizedStat(minStat, maxStat, itemLevel);
 
-	float minFloatStat = crystalData->getMinForceCost();
-	float maxFloatStat = crystalData->getMaxForceCost();
+		float minFloatStat = crystalData->getMinForceCost();
+		float maxFloatStat = crystalData->getMaxForceCost();
 
-	if (floatForceCost > maxFloatStat || floatForceCost < minFloatStat)
-		floatForceCost = getRandomizedStat(minFloatStat, maxFloatStat, itemLevel);
+		if (floatForceCost > maxFloatStat || floatForceCost < minFloatStat)
+			floatForceCost = getRandomizedStat(minFloatStat, maxFloatStat, itemLevel);
 
-	minFloatStat = crystalData->getMinAttackSpeed();
-	maxFloatStat = crystalData->getMaxAttackSpeed();
+		minFloatStat = crystalData->getMinAttackSpeed();
+		maxFloatStat = crystalData->getMaxAttackSpeed();
 
-	if (attackSpeed > maxFloatStat || attackSpeed < minFloatStat)
-		attackSpeed = Math::getPrecision(getRandomizedStat(minFloatStat, maxFloatStat, itemLevel), 2);
+		if (attackSpeed > maxFloatStat || attackSpeed < minFloatStat)
+			attackSpeed = Math::getPrecision(getRandomizedStat(minFloatStat, maxFloatStat, itemLevel), 2);
+
+	}
 }
 
 int LightsaberCrystalComponentImplementation::getCrystalQuality() {
@@ -294,13 +293,17 @@ void LightsaberCrystalComponentImplementation::fillAttributeList(AttributeListMe
 		} else {
 			alm->insertAttribute("crystal_owner", ownerName);
 		}
-
-		if (getColor() != 31) {
+		
+		// Show visible blade color from customization variable (preserved on tuning)
+		int bladeColorIndex = getCustomizationVariable("/private/index_color_blade").getValueOrDefault(31);
+		if (bladeColorIndex != 31) {
 			StringBuffer str3;
-			str3 << "@jedi_spam:saber_color_" << getColor();
+			str3 << "@jedi_spam:saber_color_" << bladeColorIndex;
 			alm->insertAttribute("color", str3);
-		} else {
-			if (ownerID != 0 || player->isPrivileged()) {
+		}
+
+		// Show power stats only on tuned crystals
+		if (getColor() == 31 && (ownerID != 0 || player->isPrivileged())) {
 				alm->insertAttribute("mindamage", damage);
 				alm->insertAttribute("maxdamage", damage);
 				alm->insertAttribute("wpn_attack_speed", attackSpeed);
@@ -317,12 +320,12 @@ void LightsaberCrystalComponentImplementation::fillAttributeList(AttributeListMe
 					alm->insertAttribute("challenge_level", itemLevel);
 					alm->insertAttribute("crystal_quality", str);
 				}
-			} else {
+			}
+			if(ownerID == 0) {
 				StringBuffer str;
 				str << "@jedi_spam:crystal_quality_" << getQuality();
 				alm->insertAttribute("crystal_quality", str);
 			}
-		}
 	}
 }
 
@@ -427,8 +430,11 @@ void LightsaberCrystalComponentImplementation::tuneCrystal(CreatureObject* playe
 		ownerID = player->getObjectID();
 		ownerName = player->getDisplayedName();
 
-		//Enable color crystal as power crystal
-		customizationVariables.put((uint8)50, (int16)1); //set merged flag
+		// NEW: Mark as power-capable by setting internal color to 31 (triggers all power logic)
+		// But do NOT call updateCrystal(31) — this prevents overriding the visible blade color customization
+		setColor(31);  // Internal flag only	
+
+		// Regenerate stats now that it's "power" type
 		generateCrystalStats();	//Regenerate crystal stats
 
 		// Color code is lime green.
