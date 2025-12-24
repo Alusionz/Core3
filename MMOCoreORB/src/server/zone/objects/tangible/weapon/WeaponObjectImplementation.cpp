@@ -92,11 +92,13 @@ void WeaponObjectImplementation::loadTemplateData(SharedObjectTemplate* template
 	if (templateAttackSpeed > 1)
 		attackSpeed = templateAttackSpeed;
 
-	if (!isJediWeapon()) {
-		setSliceable(true);
-	} else if (isJediWeapon()) {
-		setSliceable(false);
-	}
+	
+	//commented out for saber slicing
+	//if (!isJediWeapon()) {
+	//	setSliceable(true);
+	//} else if (isJediWeapon()) {
+	//	setSliceable(false);
+	//}
 }
 
 void WeaponObjectImplementation::sendContainerTo(CreatureObject* player) {

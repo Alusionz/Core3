@@ -295,7 +295,11 @@ void LightsaberCrystalComponentImplementation::fillAttributeList(AttributeListMe
 		}
 		
 		// Show visible blade color from customization variable (preserved on tuning)
-		int bladeColorIndex = getCustomizationVariable("/private/index_color_blade").getValueOrDefault(31);
+		int bladeColorIndex = 31; //default
+		auto custVar = customizationVariables.get("/private/index_color_blade");
+		if(custVar != nullptr){
+			bladeColorIndex = *custVar;
+		}
 		if (bladeColorIndex != 31) {
 			StringBuffer str3;
 			str3 << "@jedi_spam:saber_color_" << bladeColorIndex;

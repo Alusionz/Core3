@@ -51,6 +51,8 @@ swoop = "object/tangible/deed/vehicle_deed/speederbike_swoop_deed.iff"
 
 backpack = "object/draft_schematic/clothing/clothing_backpack_field_06.iff"
 
+antiDecayKit = "object/tangible/veteran_reward/antidecay.iff"
+
 professionSpecificItems = {
 	combat_brawler = { brawlerOneHander, brawlerTwoHander, brawlerPolearm },
 	combat_marksman = { marksmanPistol, marksmanCarbine, marksmanRifle },
@@ -61,4 +63,4 @@ professionSpecificItems = {
 	social_entertainer = { slitherhorn }
 }
 
-commonStartingItems = { marojMelon, survivalKnife, swoop, backpack }
+commonStartingItems = { marojMelon, survivalKnife, swoop, backpack, antiDecayKit }
