@@ -66,8 +66,8 @@ object_draft_schematic_weapon_lightsaber_lightsaber_one_hand_gen1 = object_draft
 
    ingredientTemplateNames = {"craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n"},
    ingredientTitleNames = {"emitter_shroud", "force_crystal", "activator", "handgrip", "power_field_insulator", "energizers"},
-   ingredientSlotType = {0, 0, 0, 0, 0, 0},
-   resourceTypes = {"mineral", "object/tangible/component/weapon/lightsaber/lightsaber_module_force_crystal.iff", "metal", "chemical", "gas", "metal"},
+   ingredientSlotType = {0, 1, 0, 0, 0, 0},
+   resourceTypes = {"mineral", "object/tangible/component/weapon/lightsaber/shared_lightsaber_module_force_crystal.iff", "metal", "chemical", "gas", "metal"},
    resourceQuantities = {15, 1, 14, 17, 20, 14},
    contribution = {80, 200, 80, 80, 80, 80},
 
