@@ -45,7 +45,13 @@ object_draft_schematic_weapon_lightsaber_lightsaber_one_hand_gen2 = object_draft
 
    templateType = DRAFTSCHEMATIC,
 
-   customObjectName = "Second Generation Lightsaber",
+   customObjectName = "Second Generation Lightsaber Pre-9",
+   noCrystalContainer = true;
+   noCrystalContainer = true;
+   customizationOptions = {1},
+   customizationStringNames = {"/private/index_no_container"},
+   customizationDefaults = {1},
+
 
    craftingToolTab = 2048, -- (See DraftSchematicObjectTemplate.h)
    complexity = 17, 
