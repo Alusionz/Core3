@@ -124,11 +124,6 @@ void WeaponObjectImplementation::createChildObjects() {
 		if (templateName.contains("_nocontainer") || templateName.contains("pre9")) {
 			return;  // No container added
 		}
-
-		// Fixed: Call parent class method
-		if (TangibleObjectImplementation::getCustomizationVariable("/private/index_no_container") == 1) {
-			return;  // No container added
-		}
 	}
 	
 	// Create any child objects in a weapon.
