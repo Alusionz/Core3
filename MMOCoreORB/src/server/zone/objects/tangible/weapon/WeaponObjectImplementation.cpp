@@ -119,14 +119,16 @@ void WeaponObjectImplementation::sendContainerTo(CreatureObject* player) {
 
 void WeaponObjectImplementation::createChildObjects() {
 	//custom skip for lightsabers
-	if(isJediWeapon()){
+	if (isJediWeapon()) {
 		String templateName = getObjectTemplate()->getFullTemplateString();
-        if (templateName.contains("_nocontainer") || templateName.contains("pre9")) {  // your naming convention
-            return;  // No container added
-        }
-    	if (getCustomizationVariable("/private/index_no_container") == 1) {
-        return;  // No container added
-}
+		if (templateName.contains("_nocontainer") || templateName.contains("pre9")) {
+			return;  // No container added
+		}
+
+		// Fixed: Call parent class method
+		if (TangibleObjectImplementation::getCustomizationVariable("/private/index_no_container") == 1) {
+			return;  // No container added
+		}
 	}
 	
 	// Create any child objects in a weapon.
