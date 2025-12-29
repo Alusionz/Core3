@@ -527,13 +527,11 @@ int LightsaberCrystalComponentImplementation::inflictDamage(TangibleObject* atta
 	return 0;
 }
 
-void LightsaberCrystalComponentImplementation::transferStatsToWeapon(LightsaberWeaponObject* lightsaber) {
+void LightsaberCrystalComponentImplementation::transferStatsToWeapon(WeaponObject* lightsaber) {
     if (lightsaber == nullptr) {
         return;
     }
-
-    // No need for locker here if called during crafting (single-threaded context),
-    // but add if you ever use elsewhere
+	
     Locker crossLocker(_this.getReferenceUnsafeStaticCast());
 
     // Only apply if this is a tuned power crystal

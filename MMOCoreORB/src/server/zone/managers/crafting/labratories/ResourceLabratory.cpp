@@ -10,8 +10,6 @@
 #include "server/zone/objects/tangible/component/Component.h"
 #include "server/zone/objects/manufactureschematic/ingredientslots/ComponentSlot.h"
 #include "server/zone/objects/tangible/weapon/WeaponObject.h"
-#include "server/zone/objects/tangible/weapon/lightsaber/LightsaberWeaponObject.h"
-#include "server/zone/objects/tangible/component/lightsaber/LightsaberCrystalComponent.h"
 
 //#define DEBUG_RESOURCE_LAB
 
@@ -215,23 +213,23 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 		ManagedReference<Component*> component = cast<Component*>(tano.get());
 
 		//Custom lightsaber crystal stat transfer
-		if(component->isLightsaberCrystalObject()){
+		if (component->isLightsaberCrystalObject()) {
 #ifdef DEBUG_RESOURCE_LAB
-		info(true) <<"Found tuned LightsaberCrystalComponent -- transferring stats";
-#endif //DEBUG_RESOURCE_LAB				
+			info(true) << "Found tuned LightsaberCrystalComponent -- transferring stats";
+#endif
 			if (prototype->isWeaponObject()) {
-				WeaponObject* weapon = cast<WeaponObject*>(prototype.get());
-				if (weapon != nullptr && weapon->isLightsaberWeapon()) {
+				WeaponObject* weapon = cast<WeaponObject*>(prototype);
+				if (weapon != nullptr) {
 					LightsaberCrystalComponent* crystal = cast<LightsaberCrystalComponent*>(component.get());
 					if (crystal != nullptr) {
-						Locker crystalLocker(crystal);  // Thread safety
-						crystal->transferStatsToWeapon(weapon);
+						Locker crystalLocker(crystal);
+						crystal->transferStatsToWeapon(weapon);  // Pass base WeaponObject*
 						modified = true;
 					}
 				}
 			}
-			continue;  // Skip generic component processing for this crystal
-		}		
+			continue;
+		}	
 		//End custom lightsaber logic
 		
 		//Existing: Clothing fiber panels / synthetic cloth skill mods
