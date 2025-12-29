@@ -392,12 +392,12 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 			weapon->setHealthAttackCost(weapon->getHealthAttackCost() + tunedCrystal->getSacHealth());
 			weapon->setActionAttackCost(weapon->getActionAttackCost() + tunedCrystal->getSacAction());
 			weapon->setMindAttackCost(weapon->getMindAttackCost() + tunedCrystal->getSacMind());
-			weapon->setForceCost(weapon->getForceCost() + tunedCrystal->getFloatForceCost());
+			weapon->setForceCost(weapon->getForceCost() + tunedCrystal->getForceCost());
 
 			// Blade color
 			int bladeColorIndex = 31;
-			if (tunedCrystal->customizationVariables.contains((uint8)0x02)) {
-				bladeColorIndex = tunedCrystal->customizationVariables.get((uint8)0x02);
+			if (tunedCrystal->hasCustomizationVariable((uint8)0x02)) {
+				bladeColorIndex = tunedCrystal->getCustomizationVariable((uint8)0x02);
 			}
 			if (bladeColorIndex != 31) {
 				weapon->setBladeColor(bladeColorIndex);
