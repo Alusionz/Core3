@@ -381,7 +381,6 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 				}
 			}
 		}
-	}
 
 	if(isYellow) {
 		prototype->setIsCraftedEnhancedItem(true);
