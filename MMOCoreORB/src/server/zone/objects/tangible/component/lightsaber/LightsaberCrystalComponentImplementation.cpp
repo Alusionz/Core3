@@ -527,8 +527,8 @@ int LightsaberCrystalComponentImplementation::inflictDamage(TangibleObject* atta
 	return 0;
 }
 
-void LightsaberCrystalComponentImplementation::transferStatsToWeapon(WeaponObject* lightsaber) {
-    if (lightsaber == nullptr || !lightsaber->isLightsaberWeapon()) {
+void LightsaberCrystalComponentImplementation::transferStatsToWeapon(LightsaberWeaponObject* lightsaber) {
+    if (lightsaber == nullptr) {
         return;
     }
 
