@@ -10,6 +10,7 @@
 #include "server/zone/objects/tangible/component/Component.h"
 #include "server/zone/objects/manufactureschematic/ingredientslots/ComponentSlot.h"
 #include "server/zone/objects/tangible/weapon/WeaponObject.h"
+#include "server/zone/objects/tangible/component/lightsaber/LightsaberCrystalComponent.h"
 
 //#define DEBUG_RESOURCE_LAB
 
@@ -219,11 +220,13 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 #endif
 			if (prototype->isWeaponObject()) {
 				WeaponObject* weapon = cast<WeaponObject*>(prototype);
-				if (weapon != nullptr) {
-					// Safe call — transferStatsToWeapon takes WeaponObject*
-					// The crystal object is still a Component*, but the method is virtual
-					component->transferStatsToWeapon(weapon);
-					modified = true;
+				if (weapon!= nullptr){
+					//Dynamic downcast to access the custom method
+					LightsaberCrystalCOmponent* crystal = dynamic_cast<LightsaberCrystalComponent*>(component.get());
+					if (crystal != nullptr){
+						crystal->transferStatsToWeapon(weapon);
+						modified = true;
+					}
 				}
 			}
 			continue;  // Skip generic processing
