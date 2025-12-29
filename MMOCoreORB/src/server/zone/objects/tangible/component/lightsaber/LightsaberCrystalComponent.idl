@@ -98,6 +98,7 @@ class LightsaberCrystalComponent extends Component {
 
 	public native int inflictDamage(TangibleObject attacker, int damageType, float damage, boolean destroy, boolean notifyClient = true);
 
+	public native void transferStatsToWeapon(WeaponObject lightsaber);
 	public native void generateCrystalStats();
 	public native void validateCrystalStats();
 	public native int getRandomizedStat(int min, int max, int itemLevel);

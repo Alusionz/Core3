@@ -526,3 +526,40 @@ int LightsaberCrystalComponentImplementation::inflictDamage(TangibleObject* atta
 
 	return 0;
 }
+
+void LightsaberCrystalComponentImplementation::transferStatsToWeapon(WeaponObject* lightsaber) {
+    if (lightsaber == nullptr || !lightsaber->isLightsaberWeapon()) {
+        return;
+    }
+
+    // No need for locker here if called during crafting (single-threaded context),
+    // but add if you ever use elsewhere
+    Locker crossLocker(_this.getReferenceUnsafeStaticCast());
+
+    // Only apply if this is a tuned power crystal
+    if (getColor() != 31 || ownerID == 0) {
+        return;
+    }
+
+    // Additive bonuses from crystal stats
+    lightsaber->setMinDamage(lightsaber->getMinDamage() + damage);
+    lightsaber->setMaxDamage(lightsaber->getMaxDamage() + damage);
+    lightsaber->setAttackSpeed(lightsaber->getAttackSpeed() + attackSpeed);  // Note: attackSpeed is typically negative for faster attacks
+    lightsaber->setWoundsRatio(lightsaber->getWoundsRatio() + woundChance);
+    lightsaber->setHealthAttackCost(lightsaber->getHealthAttackCost() + sacHealth);
+    lightsaber->setActionAttackCost(lightsaber->getActionAttackCost() + sacAction);
+    lightsaber->setMindAttackCost(lightsaber->getMindAttackCost() + sacMind);
+    lightsaber->setForceCost(lightsaber->getForceCost() + floatForceCost);  // Usually negative for reduction
+
+    // Optional: Apply blade color from the tuned crystal's customization
+    int bladeColorIndex = 31;
+    if (customizationVariables.contains((uint8)0x02)) {
+        bladeColorIndex = customizationVariables.get((uint8)0x02);
+    }
+    if (bladeColorIndex != 31) {
+        lightsaber->setBladeColor(bladeColorIndex);
+        lightsaber->setCustomizationVariable("/private/index_color_blade", bladeColorIndex, true);
+    }
+
+    // If you have elemental type or other custom mods, add here
+}

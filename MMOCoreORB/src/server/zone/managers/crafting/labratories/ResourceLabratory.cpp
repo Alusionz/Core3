@@ -9,6 +9,8 @@
 #include "server/zone/objects/draftschematic/DraftSchematic.h"
 #include "server/zone/objects/tangible/component/Component.h"
 #include "server/zone/objects/manufactureschematic/ingredientslots/ComponentSlot.h"
+//#include "server/zone/objects/tangible/WeaponObject.h"
+//#include "server/zone/objects/tangible/component/lightsaber/LightsaberCrystalComponent.h"
 
 //#define DEBUG_RESOURCE_LAB
 
@@ -211,6 +213,27 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 
 		ManagedReference<Component*> component = cast<Component*>(tano.get());
 
+		//Custom lightsaber crystal stat transfer
+		if(component->isLightsaberCrystalComponent()){
+#ifdef DEBUG_RESOURCE_LAB
+		info(true) <<"Found tuned LightsaberCrystalComponent -- transferring stats";
+#endif //DEBUG_RESOURCE_LAB				
+			if (prototype->isWeaponObject()) {
+				WeaponObject* weapon = cast<WeaponObject*>(prototype.get());
+				if (weapon != nullptr && weapon->isLightsaberWeapon()) {
+					LightsaberCrystalComponent* crystal = cast<LightsaberCrystalComponent*>(component.get());
+					if (crystal != nullptr) {
+						Locker crystalLocker(crystal);  // Thread safety
+						crystal->transferStatsToWeapon(weapon);
+						modified = true;
+					}
+				}
+			}
+			continue;  // Skip generic component processing for this crystal
+		}		
+		//End custom lightsaber logic
+		
+		//Existing: Clothing fiber panels / synthetic cloth skill mods
 		if (prototype->isWearableObject() && !prototype->isArmorObject()) {
 			if (component->getObjectTemplate()->getObjectName() == "@craft_clothing_ingredients_n:reinforced_fiber_panels" || component->getObjectTemplate()->getObjectName() == "@craft_clothing_ingredients_n:synthetic_cloth"){
 				for (int k = 0; k < component->getPropertyCount(); ++k) {
@@ -247,9 +270,12 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 					clothing->addSkillMod(SkillModManager::WEARABLE, key, preciseValue);
 					isYellow = true;
 				}
+				continue;
 			}
-		} else {
-			for (int j = 0; j < component->getPropertyCount(); ++j) {
+		} 
+		
+		// Generic component attribute handling (blasters, armor, etc.)
+		for (int j = 0; j < component->getPropertyCount(); ++j) {
 				attribute = component->getProperty(j);
 				modified = true;
 
