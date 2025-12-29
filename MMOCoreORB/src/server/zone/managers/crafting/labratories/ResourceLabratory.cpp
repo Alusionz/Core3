@@ -220,10 +220,10 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 #endif
 			if (prototype->isWeaponObject()) {
 				WeaponObject* weapon = cast<WeaponObject*>(prototype);
-				if (weapon!= nullptr){
-					//Dynamic downcast to access the custom method
-					LightsaberCrystalCOmponent* crystal = dynamic_cast<LightsaberCrystalComponent*>(component.get());
-					if (crystal != nullptr){
+				if (weapon != nullptr) {
+					LightsaberCrystalComponent* crystal = dynamic_cast<LightsaberCrystalComponent*>(component.get());
+					if (crystal != nullptr) {
+						Locker crystalLocker(crystal);
 						crystal->transferStatsToWeapon(weapon);
 						modified = true;
 					}
