@@ -180,15 +180,10 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 	CraftingValues* craftingValues = manufactureSchematic->getCraftingValues();
 	ManagedReference<DraftSchematic* > draftSchematic = manufactureSchematic->getDraftSchematic();
 
-#ifdef DEBUG_RESOURCE_LAB
-	info(true) << "applyComponentStats -- Manufacture schematic Info: " << manufactureSchematic->getObjectNameStringIdName() << " Total Experimental Attributes: " << craftingValues->getTotalExperimentalAttributes();
-
-	for (int i = 0; i < craftingValues->getTotalExperimentalAttributes(); ++i) {
-		info(true) << "Schematic Attribute #" << i << " - " << craftingValues->getAttribute(i);
-	}
-#endif // DEBUG_RESOURCE_LAB
-
 	bool isYellow = false;
+
+	//Store the tuned crystal for post-recalc application
+	ManagedReference<LightsaberCrystalComponent*> tunedCrystal = nullptr;
 
 	for (int i = 0; i < manufactureSchematic->getSlotCount(); ++i) {
 #ifdef DEBUG_RESOURCE_LAB
@@ -215,34 +210,15 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 
 		//Custom lightsaber crystal stat transfer
 		if (component->isLightsaberCrystalObject()) {
+			LightsaberCrystalComponent* crystal = dynamic_cast<LightsaberCrystalComponent*>(component.get());
+			if (crystal != nullptr && crystal->getColor() == 31 && crystal->getOwnerID() != 0){
 #ifdef DEBUG_RESOURCE_LAB
-			info(true) << "CRYSTAL DETECTED: " << component->getCustomObjectName().toString()
-					   << " | Tuned: color=" << component->getColor() << " ownerID=" << component->getOwnerID();
+				info(true) <<"Tuned crystal found and stored for post-recalc application: " << crystal->getCustomObjectName().toString();
 #endif
-			if (prototype->isWeaponObject()) {
-				WeaponObject* weapon = cast<WeaponObject*>(prototype);
-				if (weapon != nullptr) {
-					LightsaberCrystalComponent* crystal = dynamic_cast<LightsaberCrystalComponent*>(component.get());
-					if (crystal != nullptr) {
-						info(true) << "TRANSFERRING STATS: + " << crystal->getDamage() << " damage, "
-							<< crystal->getAttackSpeed() << " speed, "
-							<< crystal->getForceCost() << " force cost";
-
-
-
-						Locker crystalLocker(crystal);
-						crystal->transferStatsToWeapon(weapon);
-						modified = true;
-
-						info(true) << "STATS APPLIED. Saber now: " << weapon->getMinDamage() << "-" << weapon->getMaxDamage()
-								   << " damage, speed " << weapon->getAttackSpeed() << ", force " << weapon->getForceCost();
-					} else {
-					}
-				}
+				tunedCrystal = crystal;
 			}
-			continue;  // Skip generic processing
+			//Do not continue - allow normal processing if needed (safe)
 		}
-		// End custom
 		
 		//Existing: Clothing fiber panels / synthetic cloth skill mods
 		if (prototype->isWearableObject() && !prototype->isArmorObject()) {
@@ -396,6 +372,42 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 	if(isYellow) {
 		prototype->setIsCraftedEnhancedItem(true);
 		prototype->addMagicBit(false);
+	}
+
+	// === POST-RECALC: Apply tuned crystal bonuses as the final step ===
+	if (tunedCrystal != nullptr && prototype->isWeaponObject()) {
+		WeaponObject* weapon = cast<WeaponObject*>(prototype);
+		if (weapon != nullptr) {
+#ifdef DEBUG_RESOURCE_LAB
+			info(true) << "POST-RECALC: Applying tuned crystal bonuses from " << tunedCrystal->getCustomObjectName().toString();
+			info(true) << "Before: " << weapon->getMinDamage() << "-" << weapon->getMaxDamage() << " damage, speed " << weapon->getAttackSpeed() << ", force " << weapon->getForceCost();
+#endif
+
+			Locker crystalLocker(tunedCrystal);
+
+			weapon->setMinDamage(weapon->getMinDamage() + tunedCrystal->getDamage());
+			weapon->setMaxDamage(weapon->getMaxDamage() + tunedCrystal->getDamage());
+			weapon->setAttackSpeed(weapon->getAttackSpeed() + tunedCrystal->getAttackSpeed());
+			weapon->setWoundsRatio(weapon->getWoundsRatio() + tunedCrystal->getWoundChance());
+			weapon->setHealthAttackCost(weapon->getHealthAttackCost() + tunedCrystal->getSacHealth());
+			weapon->setActionAttackCost(weapon->getActionAttackCost() + tunedCrystal->getSacAction());
+			weapon->setMindAttackCost(weapon->getMindAttackCost() + tunedCrystal->getSacMind());
+			weapon->setForceCost(weapon->getForceCost() + tunedCrystal->getFloatForceCost());
+
+			// Blade color
+			int bladeColorIndex = 31;
+			if (tunedCrystal->customizationVariables.contains((uint8)0x02)) {
+				bladeColorIndex = tunedCrystal->customizationVariables.get((uint8)0x02);
+			}
+			if (bladeColorIndex != 31) {
+				weapon->setBladeColor(bladeColorIndex);
+				weapon->setCustomizationVariable("/private/index_color_blade", bladeColorIndex, true);
+			}
+
+#ifdef DEBUG_RESOURCE_LAB
+			info(true) << "After crystal: " << weapon->getMinDamage() << "-" << weapon->getMaxDamage() << " damage, speed " << weapon->getAttackSpeed() << ", force " << weapon->getForceCost();
+#endif
+		}
 	}
 
 #ifdef DEBUG_RESOURCE_LAB
