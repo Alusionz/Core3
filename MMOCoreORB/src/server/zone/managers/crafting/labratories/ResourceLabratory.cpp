@@ -397,13 +397,13 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 
 			// Blade color - use base TangibleObject methods
 			int bladeColorIndex = 31;
-			TangibleObject* tanoCrystal = cast<TangibleObject*>(tunedCrystal.get());
-			if (tanoCrystal != nullptr && tanoCrystal->hasCustomizationVariable((byte)0x02)) {
-				bladeColorIndex = tanoCrystal->getCustomizationVariable((byte)0x02);
+			String colorPath = "/private/index_color_blade";
+			if (tunedCrystal->hasCustomizationVariable(colorPath)) {
+				bladeColorIndex = tunedCrystal->getCustomizationVariable(colorPath);
 			}
 			if (bladeColorIndex != 31) {
 				weapon->setBladeColor(bladeColorIndex);
-				weapon->setCustomizationVariable("/private/index_color_blade", bladeColorIndex, true);
+				weapon->setCustomizationVariable(colorPath, bladeColorIndex, true);
 			}
 
 #ifdef DEBUG_RESOURCE_LAB
