@@ -9,8 +9,9 @@
 #include "server/zone/objects/draftschematic/DraftSchematic.h"
 #include "server/zone/objects/tangible/component/Component.h"
 #include "server/zone/objects/manufactureschematic/ingredientslots/ComponentSlot.h"
-//#include "server/zone/objects/tangible/WeaponObject.h"
-//#include "server/zone/objects/tangible/component/lightsaber/LightsaberCrystalComponent.h"
+#include "server/zone/objects/tangible/WeaponObject.h"
+#include "server/zone/objects/tangible/weapon/lightsaber/LightsaberWeaponObject.h"
+#include "server/zone/objects/tangible/component/lightsaber/LightsaberCrystalComponent.h"
 
 //#define DEBUG_RESOURCE_LAB
 
@@ -214,7 +215,7 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 		ManagedReference<Component*> component = cast<Component*>(tano.get());
 
 		//Custom lightsaber crystal stat transfer
-		if(component->isLightsaberCrystalComponent()){
+		if(component->isLightsaberCrystalObject()){
 #ifdef DEBUG_RESOURCE_LAB
 		info(true) <<"Found tuned LightsaberCrystalComponent -- transferring stats";
 #endif //DEBUG_RESOURCE_LAB				
