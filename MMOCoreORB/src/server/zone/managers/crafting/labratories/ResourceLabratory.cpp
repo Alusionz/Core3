@@ -11,8 +11,9 @@
 #include "server/zone/objects/manufactureschematic/ingredientslots/ComponentSlot.h"
 #include "server/zone/objects/tangible/weapon/WeaponObject.h"
 #include "server/zone/objects/tangible/component/lightsaber/LightsaberCrystalComponent.h"
+#include "server/zone/objects/tangible/TangibleObject.h"
 
-//#define DEBUG_RESOURCE_LAB
+#define DEBUG_RESOURCE_LAB
 
 ResourceLabratory::ResourceLabratory() {
 	setLoggingName("ResourceLabratory");
@@ -394,10 +395,11 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 			weapon->setMindAttackCost(weapon->getMindAttackCost() + tunedCrystal->getSacMind());
 			weapon->setForceCost(weapon->getForceCost() + tunedCrystal->getForceCost());
 
-			// Blade color
+			// Blade color - use base TangibleObject methods
 			int bladeColorIndex = 31;
-			if (tunedCrystal->hasCustomizationVariable((byte)0x02)) {
-				bladeColorIndex = tunedCrystal->getCustomizationVariable((byte)0x02);
+			TangibleObject* tanoCrystal = cast<TangibleObject*>(tunedCrystal.get());
+			if (tanoCrystal != nullptr && tanoCrystal->hasCustomizationVariable((byte)0x02)) {
+				bladeColorIndex = tanoCrystal->getCustomizationVariable((byte)0x02);
 			}
 			if (bladeColorIndex != 31) {
 				weapon->setBladeColor(bladeColorIndex);
@@ -409,7 +411,6 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 #endif
 		}
 	}
-
 #ifdef DEBUG_RESOURCE_LAB
 	info(true) << "----- END ResourceLabratory::applyComponentStats called ------";
 #endif
