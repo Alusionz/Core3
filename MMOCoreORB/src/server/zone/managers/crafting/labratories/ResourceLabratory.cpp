@@ -216,16 +216,27 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 		//Custom lightsaber crystal stat transfer
 		if (component->isLightsaberCrystalObject()) {
 #ifdef DEBUG_RESOURCE_LAB
-			info(true) << "Found tuned LightsaberCrystalComponent -- transferring stats";
+			info(true) << "CRYSTAL DETECTED: " << component->getCustomObjectName().toString()
+					   << " | Tuned: color=" << component->getColor() << " ownerID=" << component->getOwnerID();
 #endif
 			if (prototype->isWeaponObject()) {
 				WeaponObject* weapon = cast<WeaponObject*>(prototype);
 				if (weapon != nullptr) {
 					LightsaberCrystalComponent* crystal = dynamic_cast<LightsaberCrystalComponent*>(component.get());
 					if (crystal != nullptr) {
+						info(true) << "TRANSFERRING STATS: + " << crystal->getDamage() << " damage, "
+							<< crystal->getAttackSpeed() << " speed, "
+							<< crystal->getForceCost() << " force cost";
+
+
+
 						Locker crystalLocker(crystal);
 						crystal->transferStatsToWeapon(weapon);
 						modified = true;
+
+						info(true) << "STATS APPLIED. Saber now: " << weapon->getMinDamage() << "-" << weapon->getMaxDamage()
+								   << " damage, speed " << weapon->getAttackSpeed() << ", force " << weapon->getForceCost();
+					} else {
 					}
 				}
 			}
