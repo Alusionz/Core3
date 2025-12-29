@@ -396,8 +396,8 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 
 			// Blade color
 			int bladeColorIndex = 31;
-			if (tunedCrystal->hasCustomizationVariable((uint8)0x02)) {
-				bladeColorIndex = tunedCrystal->getCustomizationVariable((uint8)0x02);
+			if (tunedCrystal->hasCustomizationVariable((byte)0x02)) {
+				bladeColorIndex = tunedCrystal->getCustomizationVariable((byte)0x02);
 			}
 			if (bladeColorIndex != 31) {
 				weapon->setBladeColor(bladeColorIndex);
