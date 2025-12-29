@@ -220,17 +220,15 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 			if (prototype->isWeaponObject()) {
 				WeaponObject* weapon = cast<WeaponObject*>(prototype);
 				if (weapon != nullptr) {
-					LightsaberCrystalComponent* crystal = cast<LightsaberCrystalComponent*>(component.get());
-					if (crystal != nullptr) {
-						Locker crystalLocker(crystal);
-						crystal->transferStatsToWeapon(weapon);  // Pass base WeaponObject*
-						modified = true;
-					}
+					// Safe call — transferStatsToWeapon takes WeaponObject*
+					// The crystal object is still a Component*, but the method is virtual
+					component->transferStatsToWeapon(weapon);
+					modified = true;
 				}
 			}
-			continue;
-		}	
-		//End custom lightsaber logic
+			continue;  // Skip generic processing
+		}
+		// End custom
 		
 		//Existing: Clothing fiber panels / synthetic cloth skill mods
 		if (prototype->isWearableObject() && !prototype->isArmorObject()) {
