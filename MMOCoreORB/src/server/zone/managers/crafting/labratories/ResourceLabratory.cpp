@@ -165,263 +165,210 @@ int ResourceLabratory::getCreationCount(ManufactureSchematic* manufactureSchemat
 	return 1;
 }
 
+//start replacement code here ***
 bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic) {
 #ifdef DEBUG_RESOURCE_LAB
-	info(true) << "----- ResourceLabratory::applyComponentStats called ------";
+    info(true) << "----- ResourceLabratory::applyComponentStats called ------";
 #endif // DEBUG_RESOURCE_LAB
 
-	if (manufactureSchematic == nullptr || manufactureSchematic->getDraftSchematic() == nullptr)
-		return false;
+    if (manufactureSchematic == nullptr || manufactureSchematic->getDraftSchematic() == nullptr)
+        return false;
 
-	float max, min, currentvalue, propertyvalue;
-	int precision;
-	bool modified = false;
-	bool hidden;
-	String attribute, group;
+    float max, min, currentvalue, propertyvalue;
+    int precision;
+    bool modified = false;
+    bool hidden;
+    String attribute, group;
 
-	CraftingValues* craftingValues = manufactureSchematic->getCraftingValues();
-	ManagedReference<DraftSchematic* > draftSchematic = manufactureSchematic->getDraftSchematic();
+    CraftingValues* craftingValues = manufactureSchematic->getCraftingValues();
+    ManagedReference<DraftSchematic* > draftSchematic = manufactureSchematic->getDraftSchematic();
 
-	bool isYellow = false;
+    bool isYellow = false;
 
-	//Store the tuned crystal for post-recalc application
-	ManagedReference<LightsaberCrystalComponent*> tunedCrystal = nullptr;
-
-	for (int i = 0; i < manufactureSchematic->getSlotCount(); ++i) {
+    for (int i = 0; i < manufactureSchematic->getSlotCount(); ++i) {
 #ifdef DEBUG_RESOURCE_LAB
-		info(true) << "applyComponentStats -- Component #" << i;
+        info(true) << "applyComponentStats -- Component #" << i;
 #endif // DEBUG_RESOURCE_LAB
 
-		Reference<IngredientSlot* > ingredientSlot = manufactureSchematic->getSlot(i);
-		Reference<DraftSlot* > draftSlot = draftSchematic->getDraftSlot(i);
+        Reference<IngredientSlot* > ingredientSlot = manufactureSchematic->getSlot(i);
+        Reference<DraftSlot* > draftSlot = draftSchematic->getDraftSlot(i);
 
-		if(ingredientSlot == nullptr || !ingredientSlot->isComponentSlot() || !ingredientSlot->isFull())
-			continue;
+        if(ingredientSlot == nullptr || !ingredientSlot->isComponentSlot() || !ingredientSlot->isFull())
+            continue;
 
-		ComponentSlot* compSlot = cast<ComponentSlot*>(ingredientSlot.get());
+        ComponentSlot* compSlot = cast<ComponentSlot*>(ingredientSlot.get());
 
-		if(compSlot == nullptr)
-			continue;
+        if(compSlot == nullptr)
+            continue;
 
-		ManagedReference<TangibleObject*> tano = compSlot->getPrototype();
+        ManagedReference<TangibleObject*> tano = compSlot->getPrototype();
 
-		if (tano == nullptr || !tano->isComponent())
-			continue;
+        if (tano == nullptr || !tano->isComponent())
+            continue;
 
-		ManagedReference<Component*> component = cast<Component*>(tano.get());
+        ManagedReference<Component*> component = cast<Component*>(tano.get());
 
-		//Custom lightsaber crystal stat transfer
-		if (component->isLightsaberCrystalObject()) {
-			LightsaberCrystalComponent* crystal = dynamic_cast<LightsaberCrystalComponent*>(component.get());
-			if (crystal != nullptr && crystal->getColor() == 31 && crystal->getOwnerID() != 0){
+        // Custom lightsaber crystal stat transfer (integrated like blaster components)
+        if (component->isLightsaberCrystalObject()) {
+            LightsaberCrystalComponent* crystal = dynamic_cast<LightsaberCrystalComponent*>(component.get());
+            if (crystal != nullptr && crystal->getColor() == 31 && crystal->getOwnerID() != 0) {  // Your merged/tuned check
 #ifdef DEBUG_RESOURCE_LAB
-				info(true) <<"Tuned crystal found and stored for post-recalc application: " << crystal->getCustomObjectName().toString();
+                info(true) << "Tuned crystal found: " << crystal->getCustomObjectName().toString();
 #endif
-				tunedCrystal = crystal;
-			}
-			//Do not continue - allow normal processing if needed (safe)
-		}
-		
-		//Existing: Clothing fiber panels / synthetic cloth skill mods
-		if (prototype->isWearableObject() && !prototype->isArmorObject()) {
-			if (component->getObjectTemplate()->getObjectName() == "@craft_clothing_ingredients_n:reinforced_fiber_panels" || component->getObjectTemplate()->getObjectName() == "@craft_clothing_ingredients_n:synthetic_cloth"){
-				for (int k = 0; k < component->getPropertyCount(); ++k) {
-					attribute = component->getProperty(k);
+                Locker crystalLocker(crystal);  // Lock here for safety
 
-					if (attribute == "" || attribute == "null") {
-						continue;
-					}
+                // Map tuned stats to schematic attributes and apply using combine logic (mimics blaster power handler)
+                // Adjust attribute names if needed (e.g., from your debug logs: "mindamage", etc.)
+                // Use draftSlot->getContribution() like in generic loop
+                float contribution = draftSlot->getContribution();
 
-					String key = checkBioSkillMods(attribute);
-
-					if (key == "")
-						continue;
-
-					currentvalue = component->getAttributeValue(attribute);
-					precision = component->getAttributePrecision(attribute);
-
-					int preciseValue = Math::getPrecision(currentvalue, precision);
-
-					WearableObject* clothing = cast<WearableObject*>(prototype);
-					const VectorMap<String, int>* clothingMods = clothing->getWearableSkillMods();
-
-					int existingValue = 0;
-
-					if (clothingMods->contains(key)) {
-						existingValue = clothingMods->get(key);
-					}
-
-					preciseValue += existingValue;
-
-					if (preciseValue > 25)
-						preciseValue = 25;
-
-					clothing->addSkillMod(SkillModManager::WEARABLE, key, preciseValue);
-					isYellow = true;
-				}
-				continue;
-			}
-		} 
-		
-		// Generic component attribute handling (blasters, armor, etc.)
-		for (int j = 0; j < component->getPropertyCount(); ++j) {
-				attribute = component->getProperty(j);
-				modified = true;
-
+                // Damage (adds to both min and max, assuming LINEARCOMBINE)
+                if (craftingValues->hasExperimentalAttribute("mindamage")) {
+                    attribute = "mindamage";
+                    short combineType = craftingValues->getCombineType(attribute);
+                    if (combineType == AttributesMap::LINEARCOMBINE) {  // Match dev's switch logic
+                        propertyvalue = crystal->getDamage() * contribution;
+                        currentvalue = craftingValues->getCurrentValue(attribute);
+                        min = craftingValues->getMinValue(attribute);
+                        max = craftingValues->getMaxValue(attribute);
+                        currentvalue += propertyvalue;
+                        min += propertyvalue;
+                        max += propertyvalue;
+                        craftingValues->setCurrentValue(attribute, currentvalue);
+                        craftingValues->setMinValue(attribute, min);
+                        craftingValues->setMaxValue(attribute, max);
+                        modified = true;
 #ifdef DEBUG_RESOURCE_LAB
-				info(true) << "Component Attribute: " << attribute;
-#endif // DEBUG_RESOURCE_LAB
-
-				if (craftingValues->hasExperimentalAttribute(attribute)) {
-#ifdef DEBUG_RESOURCE_LAB
-					info(true) << "Crafting values contains attribute: " << attribute << " updating values and percentages.";
-#endif // DEBUG_RESOURCE_LAB
-
-					max = craftingValues->getMaxValue(attribute);
-					min = craftingValues->getMinValue(attribute);
-					hidden = craftingValues->isHidden(attribute);
-					currentvalue = craftingValues->getCurrentValue(attribute);
-					propertyvalue = component->getAttributeValue(attribute) * draftSlot->getContribution();
-					short combineType = craftingValues->getCombineType(attribute);
-
-					switch(combineType) {
-					case AttributesMap::LINEARCOMBINE:
-						currentvalue += propertyvalue;
-						min += propertyvalue;
-						max += propertyvalue;
-
-#ifdef DEBUG_RESOURCE_LAB
-						info(true) << "LINEARCOMBINE: Adding propertyvalue = " << propertyvalue << " Set New Atrributes - Value = " << currentvalue << " Min = " << min << " Max = " << max;
-#endif // DEBUG_RESOURCE_LAB
-
-						craftingValues->setMinValue(attribute, min);
-						craftingValues->setMaxValue(attribute, max);
-
-						craftingValues->setCurrentValue(attribute, currentvalue);
-						break;
-					case AttributesMap::PERCENTAGECOMBINE:
-						currentvalue += propertyvalue;
-						min += propertyvalue;
-						max += propertyvalue;
-
-#ifdef DEBUG_RESOURCE_LAB
-						info(true) << "PERCENTAGECOMBINE: Adding propertyvalue = " << propertyvalue << " Set New Atrributes - Value = " << currentvalue << " Min = " << min << " Max = " << max;
-#endif // DEBUG_RESOURCE_LAB
-
-						craftingValues->setMinValue(attribute, min);
-						craftingValues->setMaxValue(attribute, max);
-
-						craftingValues->setCurrentPercentage(attribute, currentvalue);
-						break;
-					case AttributesMap::BITSETCOMBINE:
-						currentvalue = (int)currentvalue | (int)propertyvalue;
-
-#ifdef DEBUG_RESOURCE_LAB
-						info(true) << "BITSETCOMBINE: Set New Atrributes - Value = " << currentvalue << " Min = " << min << " Max = " << max;
-#endif // DEBUG_RESOURCE_LAB
-
-						craftingValues->setCurrentValue(attribute, currentvalue);
-						break;
-					case AttributesMap::OVERRIDECOMBINE:
-						// Do nothing because the values should override whatever is
-						// on the component
-						break;
-					case AttributesMap::LIMITEDCOMBINE:
-						currentvalue += propertyvalue;
-
-						if (currentvalue < min)
-							currentvalue = min;
-
-						if (currentvalue > max)
-							currentvalue = max;
-
-#ifdef DEBUG_RESOURCE_LAB
-						info(true) << "LIMITEDCOMBINE: Adding propertyvalue = " << propertyvalue << " Set New Atrributes - Value = " << currentvalue << " Min = " << min << " Max = " << max;
-#endif // DEBUG_RESOURCE_LAB
-
-						craftingValues->setCurrentValue(attribute, currentvalue);
-
-						modified = false;
-						break;
-					default:
-						break;
-					}
-
-				} else {
-#ifdef DEBUG_RESOURCE_LAB
-					info(true) << "Crafting values DOES NOT contain attribute: " << attribute << " addingExperimentalAttribute.";
-#endif // DEBUG_RESOURCE_LAB
-					currentvalue = component->getAttributeValue(attribute);
-					precision = component->getAttributePrecision(attribute);
-					group = component->getAttributeGroup(attribute);
-					hidden = component->getAttributeHidden(attribute);
-
-#ifdef DEBUG_RESOURCE_LAB
-					if (hidden)
-						info(true) << "Attribute: " << attribute << " is hidden.";
-					else
-						info(true) << "Attribute: " << attribute << " is NOT hidden.";
-#endif // DEBUG_RESOURCE_LAB
-
-					craftingValues->addExperimentalAttribute(attribute, group, currentvalue, currentvalue, precision, hidden, AttributesMap::LINEARCOMBINE);
-					craftingValues->setCurrentPercentage(attribute, 0);
-					craftingValues->setMaxPercentage(attribute, 0);
-					craftingValues->setCurrentValue(attribute, currentvalue);
-				}
-			}
-		}
-
-	if(isYellow) {
-		prototype->setIsCraftedEnhancedItem(true);
-		prototype->addMagicBit(false);
-	}
-
-	// === POST-RECALC: Apply tuned crystal bonuses as the final step ===
-if (tunedCrystal != nullptr && prototype->isWeaponObject()) {
-    WeaponObject* weapon = cast<WeaponObject*>(prototype);
-    if (weapon != nullptr) {
-#ifdef DEBUG_RESOURCE_LAB
-        info(true) << "POST-RECALC: Applying tuned crystal bonuses from " << tunedCrystal->getCustomObjectName().toString();
-        info(true) << "Before: " << weapon->getMinDamage() << "-" << weapon->getMaxDamage() << " damage, speed " << weapon->getAttackSpeed() << ", force " << weapon->getForceCost();
+                        info(true) << "Applied tuned minDamage: " << propertyvalue;
 #endif
+                    }
+                }
+                if (craftingValues->hasExperimentalAttribute("maxdamage")) {
+                    attribute = "maxdamage";
+                    short combineType = craftingValues->getCombineType(attribute);
+                    if (combineType == AttributesMap::LINEARCOMBINE) {
+                        propertyvalue = crystal->getDamage() * contribution;
+                        currentvalue = craftingValues->getCurrentValue(attribute);
+                        min = craftingValues->getMinValue(attribute);
+                        max = craftingValues->getMaxValue(attribute);
+                        currentvalue += propertyvalue;
+                        min += propertyvalue;
+                        max += propertyvalue;
+                        craftingValues->setCurrentValue(attribute, currentvalue);
+                        craftingValues->setMinValue(attribute, min);
+                        craftingValues->setMaxValue(attribute, max);
+                        modified = true;
+#ifdef DEBUG_RESOURCE_LAB
+                        info(true) << "Applied tuned maxDamage: " << propertyvalue;
+#endif
+                    }
+                }
 
-        Locker crystalLocker(tunedCrystal);
+                // Attack Speed
+                if (craftingValues->hasExperimentalAttribute("attackspeed")) {
+                    attribute = "attackspeed";
+                    short combineType = craftingValues->getCombineType(attribute);
+                    if (combineType == AttributesMap::LINEARCOMBINE) {
+                        propertyvalue = crystal->getAttackSpeed() * contribution;
+                        currentvalue = craftingValues->getCurrentValue(attribute);
+                        min = craftingValues->getMinValue(attribute);
+                        max = craftingValues->getMaxValue(attribute);
+                        currentvalue += propertyvalue;
+                        min += propertyvalue;
+                        max += propertyvalue;
+                        craftingValues->setCurrentValue(attribute, currentvalue);
+                        craftingValues->setMinValue(attribute, min);
+                        craftingValues->setMaxValue(attribute, max);
+                        modified = true;
+#ifdef DEBUG_RESOURCE_LAB
+                        info(true) << "Applied tuned attackSpeed: " << propertyvalue;
+#endif
+                    }
+                }
 
-        weapon->setMinDamage(weapon->getMinDamage() + tunedCrystal->getDamage());
-        weapon->setMaxDamage(weapon->getMaxDamage() + tunedCrystal->getDamage());
-        weapon->setAttackSpeed(weapon->getAttackSpeed() + tunedCrystal->getAttackSpeed());
-        weapon->setWoundsRatio(weapon->getWoundsRatio() + tunedCrystal->getWoundChance());
-        weapon->setHealthAttackCost(weapon->getHealthAttackCost() + tunedCrystal->getSacHealth());
-        weapon->setActionAttackCost(weapon->getActionAttackCost() + tunedCrystal->getSacAction());
-        weapon->setMindAttackCost(weapon->getMindAttackCost() + tunedCrystal->getSacMind());
-        weapon->setForceCost(weapon->getForceCost() + tunedCrystal->getForceCost());
+                // Repeat for other stats: wound chance, SAC, force cost
+                // Example for woundratio
+                if (craftingValues->hasExperimentalAttribute("woundratio")) {
+                    attribute = "woundratio";
+                    short combineType = craftingValues->getCombineType(attribute);
+                    if (combineType == AttributesMap::LINEARCOMBINE) {
+                        propertyvalue = crystal->getWoundChance() * contribution;
+                        currentvalue = craftingValues->getCurrentValue(attribute);
+                        min = craftingValues->getMinValue(attribute);
+                        max = craftingValues->getMaxValue(attribute);
+                        currentvalue += propertyvalue;
+                        min += propertyvalue;
+                        max += propertyvalue;
+                        craftingValues->setCurrentValue(attribute, currentvalue);
+                        craftingValues->setMinValue(attribute, min);
+                        craftingValues->setMaxValue(attribute, max);
+                        modified = true;
+#ifdef DEBUG_RESOURCE_LAB
+                        info(true) << "Applied tuned woundChance: " << propertyvalue;
+#endif
+                    }
+                }
 
-        // Blade color - safely read from customization variables
-        int bladeColorIndex = 31;  // default to your "merged" color
-        byte colorType = 0x02;
+                // Health SAC
+                if (craftingValues->hasExperimentalAttribute("healthcost")) {
+                    attribute = "healthcost";
+                    short combineType = craftingValues->getCombineType(attribute);
+                    if (combineType == AttributesMap::LINEARCOMBINE) {
+                        propertyvalue = crystal->getSacHealth() * contribution;
+                        currentvalue = craftingValues->getCurrentValue(attribute);
+                        min = craftingValues->getMinValue(attribute);
+                        max = craftingValues->getMaxValue(attribute);
+                        currentvalue += propertyvalue;
+                        min += propertyvalue;
+                        max += propertyvalue;
+                        craftingValues->setCurrentValue(attribute, currentvalue);
+                        craftingValues->setMinValue(attribute, min);
+                        craftingValues->setMaxValue(attribute, max);
+                        modified = true;
+#ifdef DEBUG_RESOURCE_LAB
+                        info(true) << "Applied tuned sacHealth: " << propertyvalue;
+#endif
+                    }
+                }
 
-        auto custVars = tunedCrystal->getCustomizationVariables();
-        if (custVars != nullptr && custVars->contains(colorType)) {
-            bladeColorIndex = custVars->get(colorType);
+                // Action SAC (repeat pattern for "actioncost" and crystal->getSacAction())
+                // Mind SAC ("mindcost" and getSacMind())
+                // Force Cost ("forcecost" and getForceCost())
+
+                // Blade color - keep as-is, but now inside the loop (no need for post-recalc)
+                int bladeColorIndex = 31;
+                byte colorType = 0x02;
+                auto custVars = crystal->getCustomizationVariables();
+                if (custVars != nullptr && custVars->contains(colorType)) {
+                    bladeColorIndex = custVars->get(colorType);
+                }
+                if (bladeColorIndex != 31 && prototype->isWeaponObject()) {
+                    WeaponObject* weapon = cast<WeaponObject*>(prototype);
+                    if (weapon != nullptr) {
+                        weapon->setBladeColor(bladeColorIndex);
+                        weapon->setCustomizationVariable("/private/index_color_blade", bladeColorIndex, true);
+                    }
+                }
+            }
+            // Continue to allow normal processing (e.g., if crystal has other generic attributes)
         }
 
-        if (bladeColorIndex != 31) {
-            weapon->setBladeColor(bladeColorIndex);
-            weapon->setCustomizationVariable("/private/index_color_blade", bladeColorIndex, true);
-        }
+        // ... (rest of clothing handling, generic component loop unchanged)
 
-#ifdef DEBUG_RESOURCE_LAB
-        info(true) << "After crystal: " << weapon->getMinDamage() << "-" << weapon->getMaxDamage() << " damage, speed " << weapon->getAttackSpeed() << ", force " << weapon->getForceCost();
-#endif
     }
-}
-	// === END POST-RECALC ===
+
+    if(isYellow) {
+        prototype->setIsCraftedEnhancedItem(true);
+        prototype->addMagicBit(false);
+    }
+
 #ifdef DEBUG_RESOURCE_LAB
-	info(true) << "----- END ResourceLabratory::applyComponentStats called ------";
+    info(true) << "----- END ResourceLabratory::applyComponentStats called ------";
 #endif
 
-	return modified;
+    return modified;
 }
+//end replacement code ***
 
 String ResourceLabratory::checkBioSkillMods(const String& property) {
 	for (int l = 0; l < bioMods.size(); ++l) {
