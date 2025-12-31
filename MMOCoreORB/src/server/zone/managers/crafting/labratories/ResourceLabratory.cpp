@@ -165,7 +165,6 @@ int ResourceLabratory::getCreationCount(ManufactureSchematic* manufactureSchemat
 	return 1;
 }
 
-//start replacement code here ***
 bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, ManufactureSchematic* manufactureSchematic) {
 #ifdef DEBUG_RESOURCE_LAB
     info(true) << "----- ResourceLabratory::applyComponentStats called ------";
@@ -286,7 +285,6 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
                     }
                 }
 
-                // Repeat for other stats: wound chance, SAC, force cost
                 // Example for woundratio
                 if (craftingValues->hasExperimentalAttribute("woundratio")) {
                     attribute = "woundratio";
@@ -331,9 +329,71 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
                     }
                 }
 
-                // Action SAC (repeat pattern for "actioncost" and crystal->getSacAction())
-                // Mind SAC ("mindcost" and getSacMind())
-                // Force Cost ("forcecost" and getForceCost())
+				// Action SAC
+				if (craftingValues->hasExperimentalAttribute("actioncost")) {
+					attribute = "actioncost";
+					short combineType = craftingValues->getCombineType(attribute);
+					if (combineType == AttributesMap::LINEARCOMBINE) {
+						propertyvalue = crystal->getSacAction() * contribution;
+						currentvalue = craftingValues->getCurrentValue(attribute);
+						min = craftingValues->getMinValue(attribute);
+						max = craftingValues->getMaxValue(attribute);
+						currentvalue += propertyvalue;
+						min += propertyvalue;
+						max += propertyvalue;
+						craftingValues->setCurrentValue(attribute, currentvalue);
+						craftingValues->setMinValue(attribute, min);
+						craftingValues->setMaxValue(attribute, max);
+						modified = true;
+#ifdef DEBUG_RESOURCE_LAB
+						info(true) << "Applied tuned sacAction: " << propertyvalue;
+#endif
+					}
+				}
+
+				// Mind SAC
+				if (craftingValues->hasExperimentalAttribute("mindcost")) {
+					attribute = "mindcost";
+					short combineType = craftingValues->getCombineType(attribute);
+					if (combineType == AttributesMap::LINEARCOMBINE) {
+						propertyvalue = crystal->getSacMind() * contribution;
+						currentvalue = craftingValues->getCurrentValue(attribute);
+						min = craftingValues->getMinValue(attribute);
+						max = craftingValues->getMaxValue(attribute);
+						currentvalue += propertyvalue;
+						min += propertyvalue;
+						max += propertyvalue;
+						craftingValues->setCurrentValue(attribute, currentvalue);
+						craftingValues->setMinValue(attribute, min);
+						craftingValues->setMaxValue(attribute, max);
+						modified = true;
+#ifdef DEBUG_RESOURCE_LAB
+						info(true) << "Applied tuned sacMind: " << propertyvalue;
+#endif
+					}
+				}
+
+				// Force Cost
+				if (craftingValues->hasExperimentalAttribute("forcecost")) {
+					attribute = "forcecost";
+					short combineType = craftingValues->getCombineType(attribute);
+					if (combineType == AttributesMap::LINEARCOMBINE) {
+						propertyvalue = crystal->getForceCost() * contribution;
+						currentvalue = craftingValues->getCurrentValue(attribute);
+						min = craftingValues->getMinValue(attribute);
+						max = craftingValues->getMaxValue(attribute);
+						currentvalue += propertyvalue;
+						min += propertyvalue;
+						max += propertyvalue;
+						craftingValues->setCurrentValue(attribute, currentvalue);
+						craftingValues->setMinValue(attribute, min);
+						craftingValues->setMaxValue(attribute, max);
+						modified = true;
+#ifdef DEBUG_RESOURCE_LAB
+						info(true) << "Applied tuned forceCost: " << propertyvalue;
+#endif
+					}
+				}
 
                 // Blade color - keep as-is, but now inside the loop (no need for post-recalc)
                 int bladeColorIndex = 31;
@@ -368,7 +428,6 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 
     return modified;
 }
-//end replacement code ***
 
 String ResourceLabratory::checkBioSkillMods(const String& property) {
 	for (int l = 0; l < bioMods.size(); ++l) {
