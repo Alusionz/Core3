@@ -485,6 +485,18 @@ void LightsaberCrystalComponentImplementation::updateCraftingValues(CraftingValu
 
 	generateCrystalStats();
 
+	// Add the generated stats as experimental attributes to the crafting values (transfers to saber)
+	if (color == 31) {  // Power stats only for power or merged crystals
+		values->addExperimentalAttribute("mindamage", damage);
+		values->addExperimentalAttribute("maxdamage", damage);
+		values->addExperimentalAttribute("wpn_attack_speed", attackSpeed);
+		values->addExperimentalAttribute("wpn_wound_chance", woundChance);
+		values->addExperimentalAttribute("wpn_attack_cost_health", sacHealth);
+		values->addExperimentalAttribute("wpn_attack_cost_action", sacAction);
+		values->addExperimentalAttribute("wpn_attack_cost_mind", sacMind);
+		values->addExperimentalAttribute("forcecost", floatForceCost);
+	}
+
 	ComponentImplementation::updateCraftingValues(values, firstUpdate);
 }
 
