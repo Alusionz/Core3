@@ -12,7 +12,7 @@
 #include "server/zone/objects/tangible/weapon/WeaponObject.h"
 #include "server/zone/objects/tangible/component/lightsaber/LightsaberCrystalComponent.h"
 #include "server/zone/objects/tangible/TangibleObject.h"
-#include "server/zone/objects/tangible/SceneObject.h"
+#include "server/zone/objects/scene/SceneObject.h"
 
 #define DEBUG_RESOURCE_LAB
 
