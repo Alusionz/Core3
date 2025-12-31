@@ -395,11 +395,13 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 			weapon->setMindAttackCost(weapon->getMindAttackCost() + tunedCrystal->getSacMind());
 			weapon->setForceCost(weapon->getForceCost() + tunedCrystal->getForceCost());
 
-			// Blade color - use base TangibleObject methods
+			// Blade color - use string path (Core3 standard)
 			int bladeColorIndex = 31;
 			String colorPath = "/private/index_color_blade";
-			if (tunedCrystal->hasCustomizationVariable(colorPath)) {
-				bladeColorIndex = tunedCrystal->getCustomizationVariable(colorPath);
+
+			TangibleObject* tanoCrystal = cast<TangibleObject*>(tunedCrystal.get());
+			if (tanoCrystal != nullptr && tanoCrystal->hasCustomizationVariable(colorPath)) {
+				bladeColorIndex = tanoCrystal->getCustomizationVariable(colorPath);
 			}
 			if (bladeColorIndex != 31) {
 				weapon->setBladeColor(bladeColorIndex);
