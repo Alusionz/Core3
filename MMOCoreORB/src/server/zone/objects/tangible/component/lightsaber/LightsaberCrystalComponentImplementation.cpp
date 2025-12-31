@@ -514,12 +514,12 @@ int LightsaberCrystalComponentImplementation::inflictDamage(TangibleObject* atta
 				weapon->setBladeColor(31);
 				weapon->setCustomizationVariable("/private/index_color_blade", 31, true);
 
-				if (weapon->isEquipped()) {
-					ManagedReference<CreatureObject*> parent = cast<CreatureObject*>(weapon->getParent().get().get());
-					ManagedReference<SceneObject*> inventory = parent->getSlottedObject("inventory");
-					inventory->transferObject(weapon, -1, true, true);
-					parent->sendSystemMessage("@jedi_spam:lightsaber_no_color"); //That lightsaber can not be used until it has a color-modifying Force crystal installed.
-				}
+				//if (weapon->isEquipped()) {
+				//	ManagedReference<CreatureObject*> parent = cast<CreatureObject*>(weapon->getParent().get().get());
+				//	ManagedReference<SceneObject*> inventory = parent->getSlottedObject("inventory");
+				//	inventory->transferObject(weapon, -1, true, true);
+				//	parent->sendSystemMessage("@jedi_spam:lightsaber_no_color"); //That lightsaber can not be used until it has a color-modifying Force crystal installed.
+				//}
 			}
 		}
 	}

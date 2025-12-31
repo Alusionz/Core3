@@ -45,8 +45,8 @@ object_draft_schematic_weapon_lightsaber_lightsaber_one_hand_gen1 = object_draft
 
    templateType = DRAFTSCHEMATIC,
 
-   customObjectName = "First Generation Lightsaber Pre-9",
-   noCrystalContainer = true;
+   customObjectName = "First Generation Lightsaber",
+   noCrystalContainer = true; --removing container
    customizationOptions = {1},
    customizationStringNames = {"/private/index_no_container"},
    customizationDefaults = {1},
