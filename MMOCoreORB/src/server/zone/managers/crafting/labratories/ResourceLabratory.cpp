@@ -12,6 +12,7 @@
 #include "server/zone/objects/tangible/weapon/WeaponObject.h"
 #include "server/zone/objects/tangible/component/lightsaber/LightsaberCrystalComponent.h"
 #include "server/zone/objects/tangible/TangibleObject.h"
+#include "server/zone/objects/tanigle/SceneObject.h"
 
 #define DEBUG_RESOURCE_LAB
 
@@ -395,13 +396,13 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 			weapon->setMindAttackCost(weapon->getMindAttackCost() + tunedCrystal->getSacMind());
 			weapon->setForceCost(weapon->getForceCost() + tunedCrystal->getForceCost());
 
-			// Blade color - use string path (Core3 standard)
+			// Blade color - use SceneObject base methods
 			int bladeColorIndex = 31;
 			String colorPath = "/private/index_color_blade";
 
-			TangibleObject* tanoCrystal = cast<TangibleObject*>(tunedCrystal.get());
-			if (tanoCrystal != nullptr && tanoCrystal->hasCustomizationVariable(colorPath)) {
-				bladeColorIndex = tanoCrystal->getCustomizationVariable(colorPath);
+			SceneObject* sceneCrystal = cast<SceneObject*>(tunedCrystal.get());
+			if (sceneCrystal != nullptr && sceneCrystal->hasCustomizationVariable(colorPath)) {
+				bladeColorIndex = sceneCrystal->getCustomizationVariable(colorPath);
 			}
 			if (bladeColorIndex != 31) {
 				weapon->setBladeColor(bladeColorIndex);
