@@ -377,41 +377,44 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 	}
 
 	// === POST-RECALC: Apply tuned crystal bonuses as the final step ===
-	if (tunedCrystal != nullptr && prototype->isWeaponObject()) {
-		WeaponObject* weapon = cast<WeaponObject*>(prototype);
-		if (weapon != nullptr) {
+if (tunedCrystal != nullptr && prototype->isWeaponObject()) {
+    WeaponObject* weapon = cast<WeaponObject*>(prototype);
+    if (weapon != nullptr) {
 #ifdef DEBUG_RESOURCE_LAB
-			info(true) << "POST-RECALC: Applying tuned crystal bonuses from " << tunedCrystal->getCustomObjectName().toString();
-			info(true) << "Before: " << weapon->getMinDamage() << "-" << weapon->getMaxDamage() << " damage, speed " << weapon->getAttackSpeed() << ", force " << weapon->getForceCost();
+        info(true) << "POST-RECALC: Applying tuned crystal bonuses from " << tunedCrystal->getCustomObjectName().toString();
+        info(true) << "Before: " << weapon->getMinDamage() << "-" << weapon->getMaxDamage() << " damage, speed " << weapon->getAttackSpeed() << ", force " << weapon->getForceCost();
 #endif
 
-			Locker crystalLocker(tunedCrystal);
+        Locker crystalLocker(tunedCrystal);
 
-			weapon->setMinDamage(weapon->getMinDamage() + tunedCrystal->getDamage());
-			weapon->setMaxDamage(weapon->getMaxDamage() + tunedCrystal->getDamage());
-			weapon->setAttackSpeed(weapon->getAttackSpeed() + tunedCrystal->getAttackSpeed());
-			weapon->setWoundsRatio(weapon->getWoundsRatio() + tunedCrystal->getWoundChance());
-			weapon->setHealthAttackCost(weapon->getHealthAttackCost() + tunedCrystal->getSacHealth());
-			weapon->setActionAttackCost(weapon->getActionAttackCost() + tunedCrystal->getSacAction());
-			weapon->setMindAttackCost(weapon->getMindAttackCost() + tunedCrystal->getSacMind());
-			weapon->setForceCost(weapon->getForceCost() + tunedCrystal->getForceCost());
+        weapon->setMinDamage(weapon->getMinDamage() + tunedCrystal->getDamage());
+        weapon->setMaxDamage(weapon->getMaxDamage() + tunedCrystal->getDamage());
+        weapon->setAttackSpeed(weapon->getAttackSpeed() + tunedCrystal->getAttackSpeed());
+        weapon->setWoundsRatio(weapon->getWoundsRatio() + tunedCrystal->getWoundChance());
+        weapon->setHealthAttackCost(weapon->getHealthAttackCost() + tunedCrystal->getSacHealth());
+        weapon->setActionAttackCost(weapon->getActionAttackCost() + tunedCrystal->getSacAction());
+        weapon->setMindAttackCost(weapon->getMindAttackCost() + tunedCrystal->getSacMind());
+        weapon->setForceCost(weapon->getForceCost() + tunedCrystal->getForceCost());
 
-			// Blade color - use byte index (matches your tuning code)
-			int bladeColorIndex = 31;
-			byte colorType = 0x02;
-			if (tunedCrystal->hasCustomizationVariable(colorType)) {
-				bladeColorIndex = tunedCrystal->getCustomizationVariable(colorType);
-			}
-			if (bladeColorIndex != 31) {
-				weapon->setBladeColor(bladeColorIndex);
-				weapon->setCustomizationVariable("/private/index_color_blade", bladeColorIndex, true);
-			}
+        // Blade color - safely read from customization variables
+        int bladeColorIndex = 31;  // default to your "merged" color
+        byte colorType = 0x02;
+
+        auto custVars = tunedCrystal->getCustomizationVariables();
+        if (custVars != nullptr && custVars->contains(colorType)) {
+            bladeColorIndex = custVars->get(colorType);
+        }
+
+        if (bladeColorIndex != 31) {
+            weapon->setBladeColor(bladeColorIndex);
+            weapon->setCustomizationVariable("/private/index_color_blade", bladeColorIndex, true);
+        }
 
 #ifdef DEBUG_RESOURCE_LAB
-			info(true) << "After crystal: " << weapon->getMinDamage() << "-" << weapon->getMaxDamage() << " damage, speed " << weapon->getAttackSpeed() << ", force " << weapon->getForceCost();
+        info(true) << "After crystal: " << weapon->getMinDamage() << "-" << weapon->getMaxDamage() << " damage, speed " << weapon->getAttackSpeed() << ", force " << weapon->getForceCost();
 #endif
-		}
-	}
+    }
+}
 	// === END POST-RECALC ===
 #ifdef DEBUG_RESOURCE_LAB
 	info(true) << "----- END ResourceLabratory::applyComponentStats called ------";
