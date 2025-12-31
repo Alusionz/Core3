@@ -396,13 +396,12 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 			weapon->setMindAttackCost(weapon->getMindAttackCost() + tunedCrystal->getSacMind());
 			weapon->setForceCost(weapon->getForceCost() + tunedCrystal->getForceCost());
 
-			// Blade color - use SceneObject base methods
+			// Blade color - use TangibleObject base methods (string path)
 			int bladeColorIndex = 31;
 			String colorPath = "/private/index_color_blade";
-
-			SceneObject* sceneCrystal = cast<SceneObject*>(tunedCrystal.get());
-			if (sceneCrystal != nullptr && sceneCrystal->hasCustomizationVariable(colorPath)) {
-				bladeColorIndex = sceneCrystal->getCustomizationVariable(colorPath);
+			TangibleObject* tanoCrystal = cast<TangibleObject*>(tunedCrystal.get());
+			if (tanoCrystal != nullptr && tanoCrystal->hasCustomizationVariable(colorPath)) {
+				bladeColorIndex = tanoCrystal->getCustomizationVariable(colorPath);
 			}
 			if (bladeColorIndex != 31) {
 				weapon->setBladeColor(bladeColorIndex);
@@ -414,6 +413,7 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 #endif
 		}
 	}
+	// === END POST-RECALC ===
 #ifdef DEBUG_RESOURCE_LAB
 	info(true) << "----- END ResourceLabratory::applyComponentStats called ------";
 #endif
