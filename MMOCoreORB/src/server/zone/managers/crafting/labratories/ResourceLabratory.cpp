@@ -215,6 +215,23 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
                 info(true) << "Tuned crystal found: " << crystal->getCustomObjectName().toString();
 #endif
                 Locker crystalLocker(crystal);  // Lock here for safety
+                                int bladeColorIndex = crystal->getColor();
+                byte colorType = 0x02;
+                auto custVars = crystal->getCustomizationVariables();
+                if (custVars != nullptr && custVars->contains(colorType)) {
+                    bladeColorIndex = custVars->get(colorType);
+                }
+                if (bladeColorIndex >= 0 && prototype->isWeaponObject()) {
+                    WeaponObject* weapon = cast<WeaponObject*>(prototype);
+                    if (weapon != nullptr) {
+                        weapon->setBladeColor(bladeColorIndex);
+                        weapon->setCustomizationVariable("/private/index_color_blade", bladeColorIndex, true);
+
+#ifdef DEBUG_RESOURCE_LAB
+                        info(true) << "Baked in lightsaber blade color index: " << bladeColorIndex;
+#endif
+                    }
+                }
 
                 // Map tuned stats to schematic attributes and apply using combine logic (mimics blaster power handler)
                 // Adjust attribute names if needed (e.g., from your debug logs: "mindamage", etc.)
@@ -394,27 +411,9 @@ bool ResourceLabratory::applyComponentStats(TangibleObject* prototype, Manufactu
 #endif
 					}
 				}
-
-                // Blade color - keep as-is, but now inside the loop (no need for post-recalc)
-                int bladeColorIndex = 31;
-                byte colorType = 0x02;
-                auto custVars = crystal->getCustomizationVariables();
-                if (custVars != nullptr && custVars->contains(colorType)) {
-                    bladeColorIndex = custVars->get(colorType);
-                }
-                if (bladeColorIndex != 31 && prototype->isWeaponObject()) {
-                    WeaponObject* weapon = cast<WeaponObject*>(prototype);
-                    if (weapon != nullptr) {
-                        weapon->setBladeColor(bladeColorIndex);
-                        weapon->setCustomizationVariable("/private/index_color_blade", bladeColorIndex, true);
-                    }
-                }
             }
             // Continue to allow normal processing (e.g., if crystal has other generic attributes)
         }
-
-        // ... (rest of clothing handling, generic component loop unchanged)
-
     }
 
     if(isYellow) {
