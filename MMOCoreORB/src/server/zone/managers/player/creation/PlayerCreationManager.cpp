@@ -24,6 +24,7 @@
 #include "templates/customization/CustomizationIdManager.h"
 #include "server/zone/managers/skill/imagedesign/ImageDesignManager.h"
 #include "server/zone/managers/jedi/JediManager.h"
+#include "server/zone/managers/director/DirectorManager.h"
 #include "server/zone/objects/transaction/TransactionLog.h"
 #include "server/zone/managers/player/creation/SendJtlRecruitment.h"
 
@@ -365,18 +366,30 @@ bool PlayerCreationManager::createCharacter(ClientCreateCharacterCallback* callb
 	// Pre-P9: Jedi is only allowed as a starting profession if the account has unlocked the Force Sensitive slot.
 	if (profession.contains("jedi")) {
 		bool forceSensitiveUnlocked = false;
+		uint32 accountId = client->getAccountID();
 
-		try {
-			StringBuffer query;
-			query << "SELECT 1 FROM force_sensitive_unlocks WHERE account_id = " << client->getAccountID() << " LIMIT 1";
+		// Primary: persistent quest status written by hologrind unlock (setQuestStatus)
+		String unlockKey = "force_sensitive_unlock_" + String::valueOf(accountId);
+		String questStatus = DirectorManager::instance()->getQuestStatus(unlockKey);
 
-			UniqueReference<ResultSet*> res(ServerDatabase::instance()->executeQuery(query));
+		if (questStatus == "1") {
+			forceSensitiveUnlocked = true;
+		}
 
-			if (res != nullptr && res->next()) {
-				forceSensitiveUnlocked = true;
+		// Optional fallback: MySQL table (manual GM unlocks / migration)
+		if (!forceSensitiveUnlocked) {
+			try {
+				StringBuffer query;
+				query << "SELECT 1 FROM force_sensitive_unlocks WHERE account_id = " << accountId << " LIMIT 1";
+
+				UniqueReference<ResultSet*> res(ServerDatabase::instance()->executeQuery(query));
+
+				if (res != nullptr && res->next()) {
+					forceSensitiveUnlocked = true;
+				}
+			} catch (const DatabaseException& e) {
+				// Table may not exist yet; ignore
 			}
-		} catch (const DatabaseException& e) {
-			error() << "FS unlock check failed: " << e.getMessage();
 		}
 
 		if (!forceSensitiveUnlocked) {
@@ -724,8 +737,6 @@ void PlayerCreationManager::addStartingItems(CreatureObject* creature,
 	for (int i = 0; i < items->size(); ++i) {
 		String itemTemplate = items->get(i);
 
-		//instance()->info("Add Starting Items: " + itemTemplate, true);
-
 		ManagedReference<SceneObject*> item = zoneServer->createObject(
 				itemTemplate.hashCode(), 1);
 
@@ -740,14 +751,12 @@ void PlayerCreationManager::addStartingItems(CreatureObject* creature,
 
 	}
 
-	// Get inventory.
 	if (!equipmentOnly) {
 		SceneObject* inventory = creature->getSlottedObject("inventory");
 		if (inventory == nullptr) {
 			return;
 		}
 
-		//Add common starting items.
 		for (int itemNumber = 0; itemNumber < commonStartingItems.size();
 				itemNumber++) {
 			ManagedReference<SceneObject*> item = zoneServer->createObject(
@@ -771,13 +780,10 @@ void PlayerCreationManager::addProfessionStartingItems(CreatureObject* creature,
 		professionData = professionDefaultsInfo.get(0);
 
 	auto startingSkill = professionData->getSkill();
-	//Reference<Skill*> startingSkill = SkillManager::instance()->getSkill("crafting_artisan_novice");
 
-	//Starting skill.
 	SkillManager::instance()->awardSkill(startingSkill->getSkillName(),
 			creature, false, true, true);
 
-	//Set the hams.
 	for (int i = 0; i < 9; ++i) {
 		int mod = professionData->getAttributeMod(i);
 		creature->setBaseHAM(i, mod, false);
@@ -793,8 +799,6 @@ void PlayerCreationManager::addProfessionStartingItems(CreatureObject* creature,
 
 	for (int i = 0; i < itemTemplates->size(); ++i) {
 		String itemTemplate = itemTemplates->get(i);
-
-		//instance()->info("Add Profession Starting Items: " + itemTemplate, true);
 
 		ManagedReference<SceneObject*> item;
 
@@ -817,14 +821,12 @@ void PlayerCreationManager::addProfessionStartingItems(CreatureObject* creature,
 		}
 	}
 
-	// Get inventory.
 	if (!equipmentOnly) {
 		SceneObject* inventory = creature->getSlottedObject("inventory");
 		if (inventory == nullptr) {
 			return;
 		}
 
-		//Add profession specific items.
 		for (int itemNumber = 0;
 				itemNumber < professionData->getStartingItems()->size();
 				itemNumber++) {
@@ -880,7 +882,6 @@ void PlayerCreationManager::addHair(CreatureObject* creature,
 	ManagedReference<SceneObject*> hair = zoneServer->createObject(
 			hairTemplate.hashCode(), 1);
 
-	//TODO: Validate hairCustomization
 	if (hair == nullptr) {
 		return;
 	}
@@ -913,7 +914,6 @@ void PlayerCreationManager::addHair(CreatureObject* creature,
 
 void PlayerCreationManager::addCustomization(CreatureObject* creature,
 		const String& customizationString, const String& appearanceFilename) const {
-	//TODO: Validate customizationString
 	CustomizationVariables data;
 
 	data.parseFromClientString(customizationString);
@@ -939,7 +939,6 @@ void PlayerCreationManager::addStartingItemsInto(CreatureObject* creature,
 		return;
 	}
 
-	//Add common starting items.
 	for (int itemNumber = 0; itemNumber < commonStartingItems.size();
 			itemNumber++) {
 		ManagedReference<SceneObject*> item = zoneServer->createObject(
@@ -953,7 +952,6 @@ void PlayerCreationManager::addStartingItemsInto(CreatureObject* creature,
 		}
 	}
 
-	//Add profession specific items.
 	PlayerObject* player = creature->getPlayerObject();
 	if (player == nullptr) {
 		instance()->info("addStartingItemsInto: playerObject nullptr");
@@ -983,7 +981,6 @@ void PlayerCreationManager::addStartingItemsInto(CreatureObject* creature,
 		}
 	}
 
-	//Add race specific items.
 	const Vector <String>& startingItems = playerTemplate->getStartingItems();
 
 	for (int i = 0; i < startingItems.size(); ++i) {
@@ -1005,8 +1002,6 @@ void PlayerCreationManager::addStartingWeaponsInto(CreatureObject* creature,
 		SceneObject* container) const {
 	if (creature == nullptr || container == nullptr || !creature->isPlayerCreature())
 		return;
-
-//	container = creature->getSlottedObject("inventory");
 
 	PlayerCreatureTemplate* playerTemplate =
 			dynamic_cast<PlayerCreatureTemplate*>(creature->getObjectTemplate());
@@ -1031,8 +1026,6 @@ void PlayerCreationManager::addStartingWeaponsInto(CreatureObject* creature,
 	if (professionData == nullptr)
 		professionData = professionDefaultsInfo.get(0);
 
-
-	//Add common starting items.
 	for (int itemNumber = 0; itemNumber < commonStartingItems.size();
 			itemNumber++) {
 		ManagedReference<SceneObject*> item = zoneServer->createObject(
@@ -1048,8 +1041,6 @@ void PlayerCreationManager::addStartingWeaponsInto(CreatureObject* creature,
 		}
 	}
 
-
-	//Add profession specific items.
 	for (int itemNumber = 0;
 			itemNumber < professionData->getStartingItems()->size();
 			itemNumber++) {
@@ -1067,8 +1058,6 @@ void PlayerCreationManager::addStartingWeaponsInto(CreatureObject* creature,
 		}
 	}
 
-
-	//Add race specific items.
 	const Vector<String>& startingItems = playerTemplate->getStartingItems();
 
 	for (int i = 0; i < startingItems.size(); ++i) {
@@ -1109,7 +1098,6 @@ void PlayerCreationManager::addRacialMods(CreatureObject* creature,
 		}
 	}
 
-	// Get inventory.
 	if (!equipmentOnly) {
 		SceneObject* inventory = creature->getSlottedObject("inventory");
 		if (inventory == nullptr) {
