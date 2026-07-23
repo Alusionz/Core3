@@ -118,12 +118,10 @@ void WeaponObjectImplementation::sendContainerTo(CreatureObject* player) {
 }
 
 void WeaponObjectImplementation::createChildObjects() {
-	//custom skip for lightsabers
+	// Pre-P9 design: lightsabers never get a saber_inv container.
+	// Stats and blade color are baked in at craft time from the tuned crystal.
 	if (isJediWeapon()) {
-		String templateName = getObjectTemplate()->getFullTemplateString();
-		if (templateName.contains("_nocontainer") || templateName.contains("pre9")) {
-			return;  // No container added
-		}
+		return;
 	}
 	
 	// Create any child objects in a weapon.
@@ -633,7 +631,9 @@ void WeaponObjectImplementation::updateCraftingValues(CraftingValues* values, bo
 
 	if (isJediWeapon()) {
 		setForceCost(Math::getPrecision(values->getCurrentValue("forcecost"), 1));
-		setBladeColor(31);
+		// Pre-P9: do NOT force bladeColor to 31.
+		// Blade color is transferred from the tuned crystal in ResourceLabratory
+		// so the finished saber keeps its color and can be equipped.
 	}
 
 	value = values->getCurrentValue("woundchance");
@@ -758,19 +758,8 @@ void WeaponObjectImplementation::decay(CreatureObject* user) {
 		Locker locker(_this.getReferenceUnsafeStaticCast());
 
 		if (isJediWeapon()) {
-			ManagedReference<SceneObject*> saberInv = getSlottedObject("saber_inv");
-
-			if (saberInv == nullptr)
-				return;
-
-			// TODO: is this supposed to be every crystal, or random crystal(s)?
-			for (int i = 0; i < saberInv->getContainerObjectsSize(); i++) {
-				ManagedReference<LightsaberCrystalComponent*> crystal = saberInv->getContainerObject(i).castTo<LightsaberCrystalComponent*>();
-
-				if (crystal != nullptr) {
-					crystal->inflictDamage(crystal, 0, 1, true, true);
-				}
-			}
+			// Pre-P9: no container, so just decay the weapon itself
+			inflictDamage(_this.getReferenceUnsafeStaticCast(), 0, 1, true, true);
 		} else {
 			inflictDamage(_this.getReferenceUnsafeStaticCast(), 0, 1, true, true);
 
