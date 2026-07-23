@@ -118,7 +118,7 @@ function HologrindJediManager:isJedi(pCreatureObject)
 	return PlayerObject(pGhost):isJedi()
 end
 
--- Returns true if this character has already unlocked the FS slot.
+-- Returns true if this character has already unlocked the FS slot (character-level flag).
 function HologrindJediManager:hasUnlockedForceSensitiveSlot(pCreatureObject)
 	if (pCreatureObject == nil) then
 		return false
@@ -126,6 +126,11 @@ function HologrindJediManager:hasUnlockedForceSensitiveSlot(pCreatureObject)
 
 	local unlocked = readScreenPlayData(pCreatureObject, "HologrindJediManager", "forceSensitiveSlotUnlocked")
 	return unlocked == "1" or unlocked == "true"
+end
+
+-- Account-level key used by PlayerCreationManager to allow Jedi as a starting profession.
+function HologrindJediManager:getForceSensitiveUnlockKey(accountId)
+	return "force_sensitive_unlock_" .. tostring(accountId)
 end
 
 -- Sui window ok pressed callback function.
@@ -143,8 +148,8 @@ end
 -- Unlock the Force Sensitive character slot on the account.
 -- Does NOT grant Jedi skills or Jedi state on the grind character.
 -- The player must create a new character that starts as Jedi.
--- Account-level unlock is stored in MySQL table force_sensitive_unlocks
--- (see MMOCoreORB/sql/updates/force_sensitive_unlocks.sql).
+-- Account-level unlock is persisted via setQuestStatus (questdata.db) so it survives restarts
+-- and is readable by PlayerCreationManager when creating a new character.
 -- @param pCreatureObject pointer to the creature object of the player who unlocked.
 function HologrindJediManager:unlockForceSensitiveSlot(pCreatureObject)
 	local pGhost = CreatureObject(pCreatureObject):getPlayerObject()
@@ -162,12 +167,12 @@ function HologrindJediManager:unlockForceSensitiveSlot(pCreatureObject)
 	-- Store account id on the character for debugging / GM tools
 	writeScreenPlayData(pCreatureObject, "HologrindJediManager", "forceSensitiveAccountId", tostring(accountId))
 
-	-- Account-level unlock for character creation gate (PlayerCreationManager.cpp)
-	-- Lua cannot run arbitrary SQL; staff should ensure the row exists:
-	--   INSERT IGNORE INTO force_sensitive_unlocks (account_id, unlocked_at, unlocked_by_character)
-	--   VALUES (<accountId>, UNIX_TIMESTAMP(), <characterOid>);
-	-- For automated writes, a small C++ Lua binding can be added later.
-	print("[HologrindJediManager] FS slot unlocked for account_id=" .. tostring(accountId) .. " character_oid=" .. tostring(characterOid))
+	-- Account-level unlock (persistent, survives logout/restart)
+	-- PlayerCreationManager checks this key when profession contains "jedi".
+	local unlockKey = self:getForceSensitiveUnlockKey(accountId)
+	setQuestStatus(unlockKey, "1")
+
+	print("[HologrindJediManager] FS slot unlocked for account_id=" .. tostring(accountId) .. " character_oid=" .. tostring(characterOid) .. " key=" .. unlockKey)
 
 	-- System message (exact text requested)
 	CreatureObject(pCreatureObject):sendSystemMessage("You begin to feel attuned to the power of the force. Your force sensitive character slot has been unlocked!")
