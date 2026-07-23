@@ -118,37 +118,58 @@ function HologrindJediManager:isJedi(pCreatureObject)
 	return PlayerObject(pGhost):isJedi()
 end
 
+-- Returns true if this character (or its account) has already unlocked the FS slot.
+function HologrindJediManager:hasUnlockedForceSensitiveSlot(pCreatureObject)
+	if (pCreatureObject == nil) then
+		return false
+	end
+
+	local unlocked = readScreenPlayData(pCreatureObject, "HologrindJediManager", "forceSensitiveSlotUnlocked")
+	return unlocked == "1" or unlocked == "true"
+end
+
 -- Sui window ok pressed callback function.
 function HologrindJediManager:notifyOkPressed()
 -- Do nothing.
 end
 
--- Send a sui window to the player about unlocking jedi and award jedi status and force sensitive skill.
--- @param pCreatureObject pointer to the creature object of the player who unlocked jedi.
+-- Send a sui window to the player about unlocking the Force Sensitive slot.
+-- @param pCreatureObject pointer to the creature object of the player who unlocked.
 function HologrindJediManager:sendSuiWindow(pCreatureObject)
 	local suiManager = LuaSuiManager()
-	suiManager:sendMessageBox(pCreatureObject, pCreatureObject, "@quest/force_sensitive/intro:force_sensitive", "Perhaps you should meditate somewhere alone...", "@ok", "HologrindJediManager", "notifyOkPressed")
+	suiManager:sendMessageBox(pCreatureObject, pCreatureObject, "@quest/force_sensitive/intro:force_sensitive", "You begin to feel attuned to the power of the force. Your force sensitive character slot has been unlocked!\n\nLog out and create a new character to begin your journey as a Jedi.", "@ok", "HologrindJediManager", "notifyOkPressed")
 end
 
--- Award skill and jedi status to the player.
--- @param pCreatureObject pointer to the creature object of the player who unlocked jedi.
-function HologrindJediManager:awardJediStatusAndSkill(pCreatureObject)
+-- Unlock the Force Sensitive character slot on the account.
+-- Does NOT grant Jedi skills or Jedi state on the grind character.
+-- The player must create a new character that starts as Jedi.
+-- @param pCreatureObject pointer to the creature object of the player who unlocked.
+function HologrindJediManager:unlockForceSensitiveSlot(pCreatureObject)
 	local pGhost = CreatureObject(pCreatureObject):getPlayerObject()
 
 	if (pGhost == nil) then
 		return
 	end
 
-	awardSkill(pCreatureObject, "force_title_jedi_novice")
-	PlayerObject(pGhost):setJediState(1)
+	-- Persist unlock on this character so we never re-trigger
+	writeScreenPlayData(pCreatureObject, "HologrindJediManager", "forceSensitiveSlotUnlocked", "1")
+
+	-- System message (exact text requested)
+	CreatureObject(pCreatureObject):sendSystemMessage("You begin to feel attuned to the power of the force. Your force sensitive character slot has been unlocked!")
+
+	-- Also show the SUI confirmation
+	self:sendSuiWindow(pCreatureObject)
+
+	-- TODO (next step): write account-level flag so PlayerCreationManager can allow Jedi profession.
+	-- For now the unlock is recorded on the grind character via screenplay data.
+	-- Account-level persistence will be added so any new character on this account can start as Jedi.
 end
 
--- Check if the player has mastered all hologrind professions and send sui window and award skills.
+-- Check if the player has mastered all hologrind professions and unlock the FS slot.
 -- @param pCreatureObject pointer to the creature object of the player to check the jedi progression on.
 function HologrindJediManager:checkIfProgressedToJedi(pCreatureObject)
-	if self:getNumberOfMasteredProfessions(pCreatureObject) >= NUMBEROFPROFESSIONSTOMASTER and not self:isJedi(pCreatureObject) then
-		self:sendSuiWindow(pCreatureObject)
-		self:awardJediStatusAndSkill(pCreatureObject)
+	if self:getNumberOfMasteredProfessions(pCreatureObject) >= NUMBEROFPROFESSIONSTOMASTER and not self:hasUnlockedForceSensitiveSlot(pCreatureObject) then
+		self:unlockForceSensitiveSlot(pCreatureObject)
 	end
 end
 
