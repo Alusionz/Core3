@@ -362,8 +362,27 @@ bool PlayerCreationManager::createCharacter(ClientCreateCharacterCallback* callb
 	String profession, customization, hairTemplate, hairCustomization;
 	callback->getSkill(profession);
 
-	if (profession.contains("jedi"))
-		profession = "crafting_artisan";
+	// Pre-P9: Jedi is only allowed as a starting profession if the account has unlocked the Force Sensitive slot.
+	if (profession.contains("jedi")) {
+		bool forceSensitiveUnlocked = false;
+
+		try {
+			StringBuffer query;
+			query << "SELECT 1 FROM force_sensitive_unlocks WHERE account_id = " << client->getAccountID() << " LIMIT 1";
+
+			UniqueReference<ResultSet*> res(ServerDatabase::instance()->executeQuery(query));
+
+			if (res != nullptr && res->next()) {
+				forceSensitiveUnlocked = true;
+			}
+		} catch (const DatabaseException& e) {
+			error() << "FS unlock check failed: " << e.getMessage();
+		}
+
+		if (!forceSensitiveUnlocked) {
+			profession = "crafting_artisan";
+		}
+	}
 
 	callback->getCustomizationString(customization);
 	callback->getHairObject(hairTemplate);
@@ -426,6 +445,11 @@ bool PlayerCreationManager::createCharacter(ClientCreateCharacterCallback* callb
 		addProfessionStartingItems(playerCreature, profession, clientTemplate, true);
 		addStartingItems(playerCreature, clientTemplate, true);
 		addRacialMods(playerCreature, fileName, &playerTemplate->getStartingSkills(), &playerTemplate->getStartingItems(), true);
+	}
+
+	// Pre-P9: New Jedi starter characters get Jedi state so they are treated as Force users.
+	if (profession.contains("jedi") && ghost != nullptr) {
+		ghost->setJediState(1);
 	}
 
 	if (ghost != nullptr) {
