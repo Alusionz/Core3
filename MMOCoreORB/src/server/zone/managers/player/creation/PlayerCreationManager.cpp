@@ -363,38 +363,39 @@ bool PlayerCreationManager::createCharacter(ClientCreateCharacterCallback* callb
 	String profession, customization, hairTemplate, hairCustomization;
 	callback->getSkill(profession);
 
-	// Pre-P9: Jedi is only allowed as a starting profession if the account has unlocked the Force Sensitive slot.
-	if (profession.contains("jedi")) {
-		bool forceSensitiveUnlocked = false;
-		uint32 accountId = client->getAccountID();
+	// Pre-P9 Force Sensitive slot (live-style approximation):
+	// If the account has an available FS unlock, the next character created is forced to Jedi
+	// regardless of the profession the client selected (client UI cannot hide the picker).
+	// Without an unlock, Jedi cannot be chosen as a starting profession.
+	bool forceSensitiveUnlocked = false;
+	uint32 accountId = client->getAccountID();
+	String unlockKey = "force_sensitive_unlock_" + String::valueOf(accountId);
+	String questStatus = DirectorManager::instance()->getQuestStatus(unlockKey);
 
-		// Primary: persistent quest status written by hologrind unlock (setQuestStatus)
-		String unlockKey = "force_sensitive_unlock_" + String::valueOf(accountId);
-		String questStatus = DirectorManager::instance()->getQuestStatus(unlockKey);
+	if (questStatus == "1") {
+		forceSensitiveUnlocked = true;
+	}
 
-		if (questStatus == "1") {
-			forceSensitiveUnlocked = true;
-		}
+	// Optional fallback: MySQL table (manual GM unlocks / migration)
+	if (!forceSensitiveUnlocked) {
+		try {
+			StringBuffer query;
+			query << "SELECT 1 FROM force_sensitive_unlocks WHERE account_id = " << accountId << " LIMIT 1";
 
-		// Optional fallback: MySQL table (manual GM unlocks / migration)
-		if (!forceSensitiveUnlocked) {
-			try {
-				StringBuffer query;
-				query << "SELECT 1 FROM force_sensitive_unlocks WHERE account_id = " << accountId << " LIMIT 1";
+			UniqueReference<ResultSet*> res(ServerDatabase::instance()->executeQuery(query));
 
-				UniqueReference<ResultSet*> res(ServerDatabase::instance()->executeQuery(query));
-
-				if (res != nullptr && res->next()) {
-					forceSensitiveUnlocked = true;
-				}
-			} catch (const DatabaseException& e) {
-				// Table may not exist yet; ignore
+			if (res != nullptr && res->next()) {
+				forceSensitiveUnlocked = true;
 			}
+		} catch (const DatabaseException& e) {
+			// Table may not exist yet; ignore
 		}
+	}
 
-		if (!forceSensitiveUnlocked) {
-			profession = "crafting_artisan";
-		}
+	if (forceSensitiveUnlocked) {
+		profession = "jedi";
+	} else if (profession.contains("jedi")) {
+		profession = "crafting_artisan";
 	}
 
 	callback->getCustomizationString(customization);
@@ -461,8 +462,22 @@ bool PlayerCreationManager::createCharacter(ClientCreateCharacterCallback* callb
 	}
 
 	// Pre-P9: New Jedi starter characters get Jedi state so they are treated as Force users.
+	// Consume the one-shot Force Sensitive unlock after a successful Jedi create so
+	// subsequent character creations return to normal profession selection.
 	if (profession.contains("jedi") && ghost != nullptr) {
 		ghost->setJediState(1);
+
+		if (forceSensitiveUnlocked) {
+			DirectorManager::instance()->removeQuestStatus(unlockKey);
+
+			try {
+				StringBuffer delQuery;
+				delQuery << "DELETE FROM force_sensitive_unlocks WHERE account_id = " << accountId;
+				ServerDatabase::instance()->executeStatement(delQuery);
+			} catch (const DatabaseException& e) {
+				// Table may not exist; ignore
+			}
+		}
 	}
 
 	if (ghost != nullptr) {
