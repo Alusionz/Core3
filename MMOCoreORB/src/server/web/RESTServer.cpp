@@ -13,6 +13,8 @@
 #include "RESTServer.h"
 #include "server/ServerCore.h"
 #include "conf/ConfigManager.h"
+#include "server/db/ServerDatabase.h"
+#include "server/zone/managers/director/DirectorManager.h"
 
 #include "RESTEndpoint.h"
 #include "APIRequest.h"
@@ -137,6 +139,46 @@ void RESTServer::registerEndpoints() {
 
 	addEndpoint(RESTEndpoint("POST:/v1/admin/account/(\\d+)/", {"accountID"}, [this] (APIRequest& apiRequest) -> void {
 		mPlayerManagerProxy->handle(apiRequest);
+	}));
+
+	// Pre-P9: Force Sensitive slot status for launcher / character-create flow
+	addEndpoint(RESTEndpoint("GET:/v1/account/(\\d+)/force_sensitive/", {"accountID"}, [this] (APIRequest& apiRequest) -> void {
+		uint64 accountID = apiRequest.getPathFieldUnsignedLong("accountID", true);
+
+		bool forceSensitiveUnlocked = false;
+		String source = "none";
+
+		String unlockKey = "force_sensitive_unlock_" + String::valueOf(accountID);
+		String questStatus = DirectorManager::instance()->getQuestStatus(unlockKey);
+
+		if (questStatus == "1") {
+			forceSensitiveUnlocked = true;
+			source = "quest_status";
+		}
+
+		// Optional fallback: MySQL table (manual GM unlocks / migration)
+		if (!forceSensitiveUnlocked) {
+			try {
+				StringBuffer query;
+				query << "SELECT 1 FROM force_sensitive_unlocks WHERE account_id = " << accountID << " LIMIT 1";
+
+				UniqueReference<ResultSet*> res(ServerDatabase::instance()->executeQuery(query));
+
+				if (res != nullptr && res->next()) {
+					forceSensitiveUnlocked = true;
+					source = "mysql";
+				}
+			} catch (const DatabaseException& e) {
+				// Table may not exist yet; ignore
+			}
+		}
+
+		JSONSerializationType result;
+		result["account_id"] = accountID;
+		result["force_sensitive_unlocked"] = forceSensitiveUnlocked;
+		result["source"] = source.toCharArray();
+
+		apiRequest.success(result);
 	}));
 
 	addEndpoint(RESTEndpoint("GET:/v1/(find|lookup)/character/", {"mode"}, [this] (APIRequest& apiRequest) -> void {
