@@ -363,11 +363,12 @@ bool PlayerCreationManager::createCharacter(ClientCreateCharacterCallback* callb
 	String profession, customization, hairTemplate, hairCustomization;
 	callback->getSkill(profession);
 
-	// Pre-P9 Force Sensitive slot (live-style approximation):
-	// If the account has an available FS unlock, the next character created is forced to Jedi
-	// regardless of the profession the client selected (client UI cannot hide the picker).
+	// Pre-P9 Force Sensitive slot:
+	// If the account has an available FS unlock, create a blank Force Sensitive character
+	// (0 profession skills, full skill points). The profession the client selected is ignored.
 	// Without an unlock, Jedi cannot be chosen as a starting profession.
 	bool forceSensitiveUnlocked = false;
+	bool isBlankForceSensitive = false;
 	uint32 accountId = client->getAccountID();
 	String unlockKey = "force_sensitive_unlock_" + String::valueOf(accountId);
 	String questStatus = DirectorManager::instance()->getQuestStatus(unlockKey);
@@ -393,7 +394,9 @@ bool PlayerCreationManager::createCharacter(ClientCreateCharacterCallback* callb
 	}
 
 	if (forceSensitiveUnlocked) {
-		profession = "jedi";
+		// Blank Force Sensitive character – ignore the profession the client sent.
+		isBlankForceSensitive = true;
+		profession = "";		// no starting profession
 	} else if (profession.contains("jedi")) {
 		profession = "crafting_artisan";
 	}
@@ -443,7 +446,7 @@ bool PlayerCreationManager::createCharacter(ClientCreateCharacterCallback* callb
 	ManagedReference<PlayerObject*> ghost = playerCreature->getPlayerObject();
 
 	if (ghost != nullptr) {
-		//Set skillpoints before adding any skills.
+		// Set skill points before adding any skills.
 		ghost->setSkillPoints(skillPoints);
 		ghost->setStarterProfession(profession);
 	}
@@ -451,23 +454,18 @@ bool PlayerCreationManager::createCharacter(ClientCreateCharacterCallback* callb
 	addCustomization(playerCreature, customization, playerTemplate->getAppearanceFilename());
 	addHair(playerCreature, hairTemplate, hairCustomization);
 
-	if (!doTutorial) {
-		addProfessionStartingItems(playerCreature, profession, clientTemplate, false);
-		addStartingItems(playerCreature, clientTemplate, false);
-		addRacialMods(playerCreature, fileName, &playerTemplate->getStartingSkills(), &playerTemplate->getStartingItems(), false);
-	} else {
-		addProfessionStartingItems(playerCreature, profession, clientTemplate, true);
-		addStartingItems(playerCreature, clientTemplate, true);
-		addRacialMods(playerCreature, fileName, &playerTemplate->getStartingSkills(), &playerTemplate->getStartingItems(), true);
-	}
+	if (isBlankForceSensitive) {
+		// Blank Force Sensitive character:
+		// - no profession starting skills
+		// - no profession starting items
+		// - still give common / racial starting gear
+		addStartingItems(playerCreature, clientTemplate, doTutorial);
+		addRacialMods(playerCreature, fileName, nullptr, &playerTemplate->getStartingItems(), doTutorial);
 
-	// Pre-P9: New Jedi starter characters get Jedi state so they are treated as Force users.
-	// Consume the one-shot Force Sensitive unlock after a successful Jedi create so
-	// subsequent character creations return to normal profession selection.
-	if (profession.contains("jedi") && ghost != nullptr) {
-		ghost->setJediState(1);
+		if (ghost != nullptr) {
+			ghost->setJediState(1);		// Force Sensitive / eligible for Jedi trainer
 
-		if (forceSensitiveUnlocked) {
+			// Consume the one-shot unlock
 			DirectorManager::instance()->removeQuestStatus(unlockKey);
 
 			try {
@@ -477,6 +475,17 @@ bool PlayerCreationManager::createCharacter(ClientCreateCharacterCallback* callb
 			} catch (const DatabaseException& e) {
 				// Table may not exist; ignore
 			}
+		}
+	} else {
+		// Normal creation path
+		if (!doTutorial) {
+			addProfessionStartingItems(playerCreature, profession, clientTemplate, false);
+			addStartingItems(playerCreature, clientTemplate, false);
+			addRacialMods(playerCreature, fileName, &playerTemplate->getStartingSkills(), &playerTemplate->getStartingItems(), false);
+		} else {
+			addProfessionStartingItems(playerCreature, profession, clientTemplate, true);
+			addStartingItems(playerCreature, clientTemplate, true);
+			addRacialMods(playerCreature, fileName, &playerTemplate->getStartingSkills(), &playerTemplate->getStartingItems(), true);
 		}
 	}
 
