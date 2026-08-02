@@ -14,26 +14,27 @@ MeatlumpCityRaid = ScreenPlay:new {
 		warningLeadTime = 30 * 60,		-- 30 minutes
 
 		-- Maximum total duration of a raid before remaining Meatlumps are force-despawned
-		raidDuration = 45 * 60,		-- 45 minutes safety net (bigger event needs more time)
+		raidDuration = 45 * 60,		-- 45 minutes safety net
 
 		-- Random offset radius around each hotspot (meters)
 		hotspotRadius = 35,
 
-		-- How often (seconds) to check if the current wave is mostly dead
-		waveCheckInterval = 20,
+		-- How often (seconds) to check wave progress per city
+		waveCheckInterval = 15,
 
-		-- Wave is considered complete when this many or fewer remain alive across ALL cities
-		waveCompleteThreshold = 8,
+		-- A city's wave is considered complete when this many or fewer remain alive in that city
+		waveCompleteThreshold = 3,
 
 		-- Print server log messages
 		announce = true,
 	},
 
 	-- All major Corellia cities with multiple high-traffic hotspots
-	-- Spawns are distributed across these points so the city feels under attack from multiple directions
+	-- spawnMultiplier lets us scale individual cities (Bela Vistal is smaller)
 	cities = {
 		{
 			name = "Coronet",
+			spawnMultiplier = 1.0,
 			hotspots = {
 				{ x = -131,  y = -4723, z = 28 },	-- Starport
 				{ x = -60,   y = -4599, z = 28 },	-- Bank
@@ -47,6 +48,7 @@ MeatlumpCityRaid = ScreenPlay:new {
 		},
 		{
 			name = "Tyrena",
+			spawnMultiplier = 1.0,
 			hotspots = {
 				{ x = -5031, y = -2287, z = 21 },	-- Starport
 				{ x = -5110, y = -2387, z = 21 },	-- Bank
@@ -59,6 +61,7 @@ MeatlumpCityRaid = ScreenPlay:new {
 		},
 		{
 			name = "Bela Vistal",
+			spawnMultiplier = 0.5,		-- Smaller city - half the numbers
 			hotspots = {
 				{ x = 6800,  y = -5700, z = 315 },	-- City center
 				{ x = 6735,  y = -5708, z = 315 },	-- Cantina
@@ -70,6 +73,7 @@ MeatlumpCityRaid = ScreenPlay:new {
 		},
 		{
 			name = "Doaba Guerfel",
+			spawnMultiplier = 1.0,
 			hotspots = {
 				{ x = 3340,  y = 5534, z = 300 },	-- Starport
 				{ x = 3207,  y = 5382, z = 300 },	-- Bank
@@ -81,6 +85,7 @@ MeatlumpCityRaid = ScreenPlay:new {
 		},
 		{
 			name = "Kor Vella",
+			spawnMultiplier = 1.0,
 			hotspots = {
 				{ x = -3138, y = 2815, z = 86 },	-- Starport
 				{ x = -3464, y = 3039, z = 86 },	-- Cantina
@@ -93,9 +98,8 @@ MeatlumpCityRaid = ScreenPlay:new {
 		},
 	},
 
-	-- Wave definitions - consistent BIG numbers for every wave
+	-- Wave definitions - base numbers (applied after city multiplier)
 	waves = {
-		-- Wave 1
 		{
 			minCount = 80,
 			maxCount = 100,
@@ -108,8 +112,6 @@ MeatlumpCityRaid = ScreenPlay:new {
 				"meatlump_clod",
 			},
 		},
-
-		-- Wave 2
 		{
 			minCount = 80,
 			maxCount = 100,
@@ -122,8 +124,6 @@ MeatlumpCityRaid = ScreenPlay:new {
 				"meatlump_oaf",
 			},
 		},
-
-		-- Wave 3 (final)
 		{
 			minCount = 80,
 			maxCount = 100,
@@ -146,7 +146,6 @@ function MeatlumpCityRaid:start()
 		return
 	end
 
-	-- First raid after a longer delay so the server settles
 	local firstDelay = getRandomNumber(20 * 60, 45 * 60) * 1000
 	createEvent(firstDelay, "MeatlumpCityRaid", "scheduleNextRaid", nil, "")
 end
@@ -175,14 +174,17 @@ function MeatlumpCityRaid:startRaid()
 	local startMsg = "The Meatlumps have made their move! Chaotic bands of the infamous street gang have poured into the streets of every major city on Corellia. Defend the towns!"
 	broadcastToGalaxy(startMsg)
 
-	writeSharedMemory("MeatlumpCityRaid:currentWave", "1")
 	writeSharedMemory("MeatlumpCityRaid:active", "1")
 
-	-- Spawn first wave in EVERY city across multiple hotspots
-	self:spawnWaveAcrossAllCities(1)
+	-- Initialize and spawn Wave 1 independently for every city
+	for _, city in ipairs(self.cities) do
+		writeSharedMemory("MeatlumpCityRaid:" .. city.name .. ":wave", "1")
+		writeSharedMemory("MeatlumpCityRaid:" .. city.name .. ":done", "0")
+		self:spawnWaveForCity(city, 1)
+	end
 
-	-- Start the kill-progress checker
-	createEvent(self.config.waveCheckInterval * 1000, "MeatlumpCityRaid", "checkWaveProgress", nil, "")
+	-- Start the per-city progress checker
+	createEvent(self.config.waveCheckInterval * 1000, "MeatlumpCityRaid", "checkAllCitiesProgress", nil, "")
 
 	-- Safety cleanup after max duration
 	createEvent(self.config.raidDuration * 1000, "MeatlumpCityRaid", "cleanupRaid", nil, "")
@@ -191,67 +193,96 @@ function MeatlumpCityRaid:startRaid()
 	self:scheduleNextRaid()
 end
 
-function MeatlumpCityRaid:spawnWaveAcrossAllCities(waveNumber)
+function MeatlumpCityRaid:spawnWaveForCity(city, waveNumber)
 	local waveDef = self.waves[waveNumber]
 	if (waveDef == nil) then
 		return
 	end
 
-	local allOids = {}
+	local multiplier = city.spawnMultiplier or 1.0
+	local totalForCity = math.floor(getRandomNumber(waveDef.minCount, waveDef.maxCount) * multiplier)
+	-- Ensure at least a few even with multiplier
+	if (totalForCity < 5) then
+		totalForCity = 5
+	end
 
-	for _, city in ipairs(self.cities) do
-		local totalForCity = getRandomNumber(waveDef.minCount, waveDef.maxCount)
-		local hotspots = city.hotspots
-		local numHotspots = #hotspots
+	local hotspots = city.hotspots
+	local numHotspots = #hotspots
+	local basePerHotspot = math.floor(totalForCity / numHotspots)
+	local remainder = totalForCity % numHotspots
 
-		-- Distribute the total roughly evenly across hotspots (with leftover going to random ones)
-		local basePerHotspot = math.floor(totalForCity / numHotspots)
-		local remainder = totalForCity % numHotspots
+	local cityOids = {}
 
-		for h = 1, numHotspots do
-			local countThisHotspot = basePerHotspot
-			if (h <= remainder) then
-				countThisHotspot = countThisHotspot + 1
-			end
-
-			local hotspot = hotspots[h]
-
-			for i = 1, countThisHotspot do
-				local template = waveDef.templates[getRandomNumber(1, #waveDef.templates)]
-
-				local offsetX = getRandomNumber(-self.config.hotspotRadius, self.config.hotspotRadius)
-				local offsetY = getRandomNumber(-self.config.hotspotRadius, self.config.hotspotRadius)
-
-				local x = hotspot.x + offsetX
-				local y = hotspot.y + offsetY
-				local z = hotspot.z
-
-				local pMobile = spawnMobile("corellia", template, 0, x, z, y, getRandomNumber(0, 360), 0)
-
-				if (pMobile ~= nil) then
-					CreatureObject(pMobile):setPvpStatusBitmask(AGGRESSIVE + ATTACKABLE + ENEMY)
-					table.insert(allOids, SceneObject(pMobile):getObjectID())
-				end
-			end
+	for h = 1, numHotspots do
+		local countThisHotspot = basePerHotspot
+		if (h <= remainder) then
+			countThisHotspot = countThisHotspot + 1
 		end
 
-		if (self.config.announce) then
-			print("[MeatlumpCityRaid] Wave " .. waveNumber .. " spawned across " .. city.name .. " (" .. totalForCity .. " Meatlumps at " .. numHotspots .. " hotspots)")
+		local hotspot = hotspots[h]
+
+		for i = 1, countThisHotspot do
+			local template = waveDef.templates[getRandomNumber(1, #waveDef.templates)]
+
+			local offsetX = getRandomNumber(-self.config.hotspotRadius, self.config.hotspotRadius)
+			local offsetY = getRandomNumber(-self.config.hotspotRadius, self.config.hotspotRadius)
+
+			local x = hotspot.x + offsetX
+			local y = hotspot.y + offsetY
+			local z = hotspot.z
+
+			local pMobile = spawnMobile("corellia", template, 0, x, z, y, getRandomNumber(0, 360), 0)
+
+			if (pMobile ~= nil) then
+				CreatureObject(pMobile):setPvpStatusBitmask(AGGRESSIVE + ATTACKABLE + ENEMY)
+				table.insert(cityOids, SceneObject(pMobile):getObjectID())
+			end
 		end
 	end
 
-	writeSharedMemory("MeatlumpCityRaid:currentOids", table.concat(allOids, ","))
-	writeSharedMemory("MeatlumpCityRaid:currentWave", tostring(waveNumber))
+	writeSharedMemory("MeatlumpCityRaid:" .. city.name .. ":oids", table.concat(cityOids, ","))
+	writeSharedMemory("MeatlumpCityRaid:" .. city.name .. ":wave", tostring(waveNumber))
+
+	if (self.config.announce) then
+		print("[MeatlumpCityRaid] Wave " .. waveNumber .. " spawned in " .. city.name .. " (" .. #cityOids .. " Meatlumps)")
+	end
 end
 
-function MeatlumpCityRaid:checkWaveProgress()
+function MeatlumpCityRaid:checkAllCitiesProgress()
 	if (readSharedMemory("MeatlumpCityRaid:active") ~= "1") then
 		return
 	end
 
-	local oidString = readSharedMemory("MeatlumpCityRaid:currentOids")
+	local anyStillActive = false
+
+	for _, city in ipairs(self.cities) do
+		local done = readSharedMemory("MeatlumpCityRaid:" .. city.name .. ":done")
+		if (done ~= "1") then
+			anyStillActive = true
+			self:checkCityProgress(city)
+		end
+	end
+
+	if (anyStillActive) then
+		-- Keep checking while at least one city still has waves left
+		createEvent(self.config.waveCheckInterval * 1000, "MeatlumpCityRaid", "checkAllCitiesProgress", nil, "")
+	else
+		-- Every city has finished all waves
+		if (self.config.announce) then
+			print("[MeatlumpCityRaid] All cities have cleared every wave!")
+		end
+
+		local endMsg = "The Meatlump assault has been driven back. The streets of Corellia's cities grow quieter once more... for now."
+		broadcastToGalaxy(endMsg)
+
+		self:cleanupRaid()
+	end
+end
+
+function MeatlumpCityRaid:checkCityProgress(city)
+	local oidString = readSharedMemory("MeatlumpCityRaid:" .. city.name .. ":oids")
 	if (oidString == nil or oidString == "") then
-		self:advanceOrFinish()
+		self:advanceCity(city)
 		return
 	end
 
@@ -269,57 +300,60 @@ function MeatlumpCityRaid:checkWaveProgress()
 	end
 
 	if (alive <= self.config.waveCompleteThreshold) then
-		self:advanceOrFinish()
-	else
-		createEvent(self.config.waveCheckInterval * 1000, "MeatlumpCityRaid", "checkWaveProgress", nil, "")
+		self:advanceCity(city)
 	end
 end
 
-function MeatlumpCityRaid:advanceOrFinish()
-	local currentWave = tonumber(readSharedMemory("MeatlumpCityRaid:currentWave")) or 1
+function MeatlumpCityRaid:advanceCity(city)
+	local currentWave = tonumber(readSharedMemory("MeatlumpCityRaid:" .. city.name .. ":wave")) or 1
 	local nextWave = currentWave + 1
 
 	if (self.waves[nextWave] ~= nil) then
-		self:spawnWaveAcrossAllCities(nextWave)
-		createEvent(self.config.waveCheckInterval * 1000, "MeatlumpCityRaid", "checkWaveProgress", nil, "")
+		-- This city is ready for its next wave
+		self:spawnWaveForCity(city, nextWave)
 	else
+		-- This city has finished all waves
+		writeSharedMemory("MeatlumpCityRaid:" .. city.name .. ":done", "1")
+		deleteSharedMemory("MeatlumpCityRaid:" .. city.name .. ":oids")
+
 		if (self.config.announce) then
-			print("[MeatlumpCityRaid] All waves defeated across Corellia!")
+			print("[MeatlumpCityRaid] " .. city.name .. " has cleared all waves!")
 		end
-
-		local endMsg = "The Meatlump assault has been driven back. The streets of Corellia's cities grow quieter once more... for now."
-		broadcastToGalaxy(endMsg)
-
-		self:cleanupRaid()
 	end
 end
 
 function MeatlumpCityRaid:cleanupRaid()
 	writeSharedMemory("MeatlumpCityRaid:active", "0")
 
-	local oidString = readSharedMemory("MeatlumpCityRaid:currentOids")
+	local totalRemaining = 0
 
-	if (oidString ~= nil and oidString ~= "") then
-		local oids = {}
-		for oid in string.gmatch(oidString, "([^,]+)") do
-			table.insert(oids, tonumber(oid))
-		end
+	for _, city in ipairs(self.cities) do
+		local oidString = readSharedMemory("MeatlumpCityRaid:" .. city.name .. ":oids")
 
-		local remaining = 0
-		for _, oid in ipairs(oids) do
-			local pObj = getSceneObject(oid)
-			if (pObj ~= nil and SceneObject(pObj):isCreatureObject() and not CreatureObject(pObj):isDead()) then
-				SceneObject(pObj):destroyObjectFromWorld()
-				remaining = remaining + 1
+		if (oidString ~= nil and oidString ~= "") then
+			local oids = {}
+			for oid in string.gmatch(oidString, "([^,]+)") do
+				table.insert(oids, tonumber(oid))
+			end
+
+			for _, oid in ipairs(oids) do
+				local pObj = getSceneObject(oid)
+				if (pObj ~= nil and SceneObject(pObj):isCreatureObject() and not CreatureObject(pObj):isDead()) then
+					SceneObject(pObj):destroyObjectFromWorld()
+					totalRemaining = totalRemaining + 1
+				end
 			end
 		end
 
-		if (self.config.announce and remaining > 0) then
-			print("[MeatlumpCityRaid] Raid ended. " .. remaining .. " remaining Meatlumps despawned.")
-		end
+		-- Clear all per-city state
+		deleteSharedMemory("MeatlumpCityRaid:" .. city.name .. ":oids")
+		deleteSharedMemory("MeatlumpCityRaid:" .. city.name .. ":wave")
+		deleteSharedMemory("MeatlumpCityRaid:" .. city.name .. ":done")
 	end
 
-	deleteSharedMemory("MeatlumpCityRaid:currentOids")
-	deleteSharedMemory("MeatlumpCityRaid:currentWave")
+	if (self.config.announce and totalRemaining > 0) then
+		print("[MeatlumpCityRaid] Raid ended. " .. totalRemaining .. " remaining Meatlumps despawned.")
+	end
+
 	deleteSharedMemory("MeatlumpCityRaid:active")
 end
