@@ -29,6 +29,14 @@ MeatlumpCityRaid = ScreenPlay:new {
 		announce = true,
 	},
 
+	-- Progressive warning messages (minutes before raid)
+	warningMessages = {
+		[30] = "Rumors are spreading across Corellia... the Meatlumps are stirring. Whispers of coordinated mischief and sudden raids on city streets have begun to circulate. Citizens are advised to stay alert.",
+		[15] = "The rumors grow louder. Meatlump scouts have been spotted near the outskirts of Corellia's cities. Something big is brewing.",
+		[10] = "Tension rises across Corellia. Reports of Meatlump gatherings are coming in from multiple cities. The streets may not stay quiet for long.",
+		[5]  = "This is not a drill. Meatlump forces are mobilizing. All citizens in Corellia's major cities should prepare for imminent chaos.",
+	},
+
 	-- All major Corellia cities with multiple high-traffic hotspots
 	-- spawnMultiplier lets us scale individual cities (Bela Vistal is smaller)
 	cities = {
@@ -152,18 +160,41 @@ end
 
 function MeatlumpCityRaid:scheduleNextRaid()
 	local delay = getRandomNumber(self.config.minInterval, self.config.maxInterval) * 1000
-	createEvent(delay, "MeatlumpCityRaid", "issueWarning", nil, "")
+	createEvent(delay, "MeatlumpCityRaid", "beginWarningSequence", nil, "")
 end
 
-function MeatlumpCityRaid:issueWarning()
-	local warningMsg = "Rumors are spreading across Corellia... the Meatlumps are stirring. Whispers of coordinated mischief and sudden raids on city streets have begun to circulate. Citizens are advised to stay alert."
-	broadcastToGalaxy(warningMsg)
+function MeatlumpCityRaid:beginWarningSequence()
+	-- 30-minute warning
+	self:broadcastWarning(30)
 
-	if (self.config.announce) then
-		print("[MeatlumpCityRaid] 30-minute warning issued: Meatlumps preparing to strike all Corellia cities.")
+	-- Schedule the rest of the countdown
+	createEvent(15 * 60 * 1000, "MeatlumpCityRaid", "warning15", nil, "")	-- in 15 min from now = 15 min remaining
+	createEvent(20 * 60 * 1000, "MeatlumpCityRaid", "warning10", nil, "")	-- in 20 min from now = 10 min remaining
+	createEvent(25 * 60 * 1000, "MeatlumpCityRaid", "warning5",  nil, "")	-- in 25 min from now = 5 min remaining
+	createEvent(30 * 60 * 1000, "MeatlumpCityRaid", "startRaid", nil, "")	-- full 30 min later
+end
+
+function MeatlumpCityRaid:warning15()
+	self:broadcastWarning(15)
+end
+
+function MeatlumpCityRaid:warning10()
+	self:broadcastWarning(10)
+end
+
+function MeatlumpCityRaid:warning5()
+	self:broadcastWarning(5)
+end
+
+function MeatlumpCityRaid:broadcastWarning(minutes)
+	local msg = self.warningMessages[minutes]
+	if (msg ~= nil) then
+		broadcastToGalaxy(msg)
 	end
 
-	createEvent(self.config.warningLeadTime * 1000, "MeatlumpCityRaid", "startRaid", nil, "")
+	if (self.config.announce) then
+		print("[MeatlumpCityRaid] " .. minutes .. "-minute warning issued.")
+	end
 end
 
 function MeatlumpCityRaid:startRaid()
@@ -201,7 +232,6 @@ function MeatlumpCityRaid:spawnWaveForCity(city, waveNumber)
 
 	local multiplier = city.spawnMultiplier or 1.0
 	local totalForCity = math.floor(getRandomNumber(waveDef.minCount, waveDef.maxCount) * multiplier)
-	-- Ensure at least a few even with multiplier
 	if (totalForCity < 5) then
 		totalForCity = 5
 	end
@@ -264,10 +294,8 @@ function MeatlumpCityRaid:checkAllCitiesProgress()
 	end
 
 	if (anyStillActive) then
-		-- Keep checking while at least one city still has waves left
 		createEvent(self.config.waveCheckInterval * 1000, "MeatlumpCityRaid", "checkAllCitiesProgress", nil, "")
 	else
-		-- Every city has finished all waves
 		if (self.config.announce) then
 			print("[MeatlumpCityRaid] All cities have cleared every wave!")
 		end
@@ -309,10 +337,8 @@ function MeatlumpCityRaid:advanceCity(city)
 	local nextWave = currentWave + 1
 
 	if (self.waves[nextWave] ~= nil) then
-		-- This city is ready for its next wave
 		self:spawnWaveForCity(city, nextWave)
 	else
-		-- This city has finished all waves
 		writeSharedMemory("MeatlumpCityRaid:" .. city.name .. ":done", "1")
 		deleteSharedMemory("MeatlumpCityRaid:" .. city.name .. ":oids")
 
@@ -345,7 +371,6 @@ function MeatlumpCityRaid:cleanupRaid()
 			end
 		end
 
-		-- Clear all per-city state
 		deleteSharedMemory("MeatlumpCityRaid:" .. city.name .. ":oids")
 		deleteSharedMemory("MeatlumpCityRaid:" .. city.name .. ":wave")
 		deleteSharedMemory("MeatlumpCityRaid:" .. city.name .. ":done")

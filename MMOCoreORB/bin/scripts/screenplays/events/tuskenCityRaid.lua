@@ -10,8 +10,11 @@ TuskenCityRaid = ScreenPlay:new {
 		minInterval = 45 * 60,		-- 45 minutes
 		maxInterval = 90 * 60,		-- 90 minutes
 
+		-- Warning lead time before the actual raid starts
+		warningLeadTime = 30 * 60,		-- 30 minutes
+
 		-- Maximum total duration of a raid before remaining Tuskens are force-despawned
-		raidDuration = 35 * 60,		-- 35 minutes safety net (bigger raid)
+		raidDuration = 35 * 60,		-- 35 minutes safety net
 
 		-- Random offset radius around each hotspot (meters)
 		hotspotRadius = 40,
@@ -24,6 +27,15 @@ TuskenCityRaid = ScreenPlay:new {
 
 		-- Print server log messages
 		announce = true,
+	},
+
+	-- Progressive warning messages (minutes before raid)
+	-- %s will be replaced with the target city name
+	warningMessages = {
+		[30] = "A dry wind carries strange whispers across Tatooine. Scouts report increased Tusken activity near the dunes surrounding %s. Travelers are urged to remain cautious.",
+		[15] = "The desert grows restless. Multiple Tusken war bands have been sighted moving toward %s. The Sand People may be preparing a coordinated strike.",
+		[10] = "Tension mounts around %s. Local outposts report Tusken war cries echoing from the surrounding wastes. An attack appears imminent.",
+		[5]  = "This is not a false alarm. Tusken Raiders are massing on the approaches to %s. Citizens and visitors should prepare to defend the city.",
 	},
 
 	-- Cities that can be raided, each with multiple high-traffic hotspots
@@ -146,42 +158,81 @@ function TuskenCityRaid:start()
 		return
 	end
 
-	-- First raid after a short delay so the server finishes loading
 	local firstDelay = getRandomNumber(5 * 60, 12 * 60) * 1000
 	createEvent(firstDelay, "TuskenCityRaid", "scheduleNextRaid", nil, "")
 end
 
 function TuskenCityRaid:scheduleNextRaid()
 	local delay = getRandomNumber(self.config.minInterval, self.config.maxInterval) * 1000
-	createEvent(delay, "TuskenCityRaid", "startRaid", nil, "")
+	createEvent(delay, "TuskenCityRaid", "beginWarningSequence", nil, "")
+end
+
+function TuskenCityRaid:beginWarningSequence()
+	-- Pick the target city now so the warnings can name it
+	local city = self.cities[getRandomNumber(1, #self.cities)]
+	writeSharedMemory("TuskenCityRaid:cityName", city.name)
+
+	-- 30-minute warning
+	self:broadcastWarning(30)
+
+	-- Schedule the rest of the countdown
+	createEvent(15 * 60 * 1000, "TuskenCityRaid", "warning15", nil, "")
+	createEvent(20 * 60 * 1000, "TuskenCityRaid", "warning10", nil, "")
+	createEvent(25 * 60 * 1000, "TuskenCityRaid", "warning5",  nil, "")
+	createEvent(30 * 60 * 1000, "TuskenCityRaid", "startRaid", nil, "")
+end
+
+function TuskenCityRaid:warning15()
+	self:broadcastWarning(15)
+end
+
+function TuskenCityRaid:warning10()
+	self:broadcastWarning(10)
+end
+
+function TuskenCityRaid:warning5()
+	self:broadcastWarning(5)
+end
+
+function TuskenCityRaid:broadcastWarning(minutes)
+	local cityName = readSharedMemory("TuskenCityRaid:cityName") or "a Tatooine settlement"
+	local template = self.warningMessages[minutes]
+
+	if (template ~= nil) then
+		local msg = string.format(template, cityName)
+		broadcastToGalaxy(msg)
+	end
+
+	if (self.config.announce) then
+		print("[TuskenCityRaid] " .. minutes .. "-minute warning issued for " .. cityName .. ".")
+	end
 end
 
 function TuskenCityRaid:startRaid()
-	local city = self.cities[getRandomNumber(1, #self.cities)]
+	local cityName = readSharedMemory("TuskenCityRaid:cityName")
+	local city = self:getCityByName(cityName)
 
-	if (self.config.announce) then
-		print("[TuskenCityRaid] Tusken Raiders are advancing on " .. city.name .. "!")
+	if (city == nil) then
+		-- Safety fallback
+		city = self.cities[getRandomNumber(1, #self.cities)]
+		writeSharedMemory("TuskenCityRaid:cityName", city.name)
 	end
 
-	-- Store which city is under attack + raid state
-	writeSharedMemory("TuskenCityRaid:cityName", city.name)
+	if (self.config.announce) then
+		print("[TuskenCityRaid] Tusken Raiders are attacking " .. city.name .. "!")
+	end
+
+	local startMsg = string.format("The Sand People have struck! Tusken Raiders pour into the streets of %s. Defend the city!", city.name)
+	broadcastToGalaxy(startMsg)
+
 	writeSharedMemory("TuskenCityRaid:currentWave", "1")
 	writeSharedMemory("TuskenCityRaid:active", "1")
 
-	-- Keep a reference to the full city table (hotspots) via index so spawnWave can find it
-	-- We store the city name and look it up later
-	self.currentCity = city
-
-	-- Spawn first wave across the city's hotspots
 	self:spawnWave(1)
 
-	-- Start the kill-progress checker
 	createEvent(self.config.waveCheckInterval * 1000, "TuskenCityRaid", "checkWaveProgress", nil, "")
-
-	-- Safety cleanup after max duration
 	createEvent(self.config.raidDuration * 1000, "TuskenCityRaid", "cleanupRaid", nil, "")
 
-	-- Schedule the next full raid
 	self:scheduleNextRaid()
 end
 
@@ -204,7 +255,6 @@ function TuskenCityRaid:spawnWave(waveNumber)
 	local city = self:getCityByName(cityName)
 
 	if (city == nil) then
-		-- Fallback (should not happen)
 		if (self.config.announce) then
 			print("[TuskenCityRaid] ERROR: could not find city data for " .. tostring(cityName))
 		end
@@ -297,6 +347,9 @@ function TuskenCityRaid:advanceOrFinish()
 			local cityName = readSharedMemory("TuskenCityRaid:cityName") or "the city"
 			print("[TuskenCityRaid] All waves defeated at " .. cityName .. "!")
 		end
+
+		local endMsg = string.format("The Tusken assault on %s has been driven back into the desert. For now, the city stands.", readSharedMemory("TuskenCityRaid:cityName") or "the city")
+		broadcastToGalaxy(endMsg)
 
 		self:cleanupRaid()
 	end
