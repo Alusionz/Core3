@@ -6,30 +6,29 @@ MeatlumpCityRaid = ScreenPlay:new {
 	-- CONFIGURATION
 	-- ======================
 	config = {
-		-- Time between full raids (in seconds) - much rarer than Tusken
-		minInterval = 3 * 60 * 60,		-- 3 hours
-		maxInterval = 6 * 60 * 60,		-- 6 hours
-
-		-- Warning lead time before the actual raid starts
-		warningLeadTime = 30 * 60,		-- 30 minutes
-
-		-- Maximum total duration of a raid before remaining Meatlumps are force-despawned
-		raidDuration = 45 * 60,		-- 45 minutes safety net
-
-		-- Random offset radius around each hotspot (meters)
+		minInterval = 3 * 60 * 60,
+		maxInterval = 6 * 60 * 60,
+		warningLeadTime = 30 * 60,
+		raidDuration = 45 * 60,
 		hotspotRadius = 35,
-
-		-- How often (seconds) to check wave progress per city
 		waveCheckInterval = 15,
-
-		-- A city's wave is considered complete when this many or fewer remain alive in that city
 		waveCompleteThreshold = 3,
-
-		-- Print server log messages
 		announce = true,
+
+		-- Bonus loot / credit multipliers by wave
+		creditMultipliers = { [1] = 1.5, [2] = 2.0, [3] = 2.5 },
+		extraLootChances = { [1] = 35, [2] = 50, [3] = 70 },
+		extraLootLevelBonus = { [1] = 10, [2] = 20, [3] = 35 },
 	},
 
-	-- Progressive warning messages (minutes before raid)
+	bonusLootGroups = {
+		"wearables_common",
+		"weapons_all",
+		"armor_all",
+		"junk",
+		"attachments",
+	},
+
 	warningMessages = {
 		[30] = "Rumors are spreading across Corellia... the Meatlumps are stirring. Whispers of coordinated mischief and sudden raids on city streets have begun to circulate. Citizens are advised to stay alert.",
 		[15] = "The rumors grow louder. Meatlump scouts have been spotted near the outskirts of Corellia's cities. Something big is brewing.",
@@ -37,111 +36,96 @@ MeatlumpCityRaid = ScreenPlay:new {
 		[5]  = "This is not a drill. Meatlump forces are mobilizing. All citizens in Corellia's major cities should prepare for imminent chaos.",
 	},
 
-	-- All major Corellia cities with multiple high-traffic hotspots
-	-- spawnMultiplier lets us scale individual cities (Bela Vistal is smaller)
 	cities = {
 		{
 			name = "Coronet",
 			spawnMultiplier = 1.0,
 			hotspots = {
-				{ x = -131,  y = -4723, z = 28 },	-- Starport
-				{ x = -60,   y = -4599, z = 28 },	-- Bank
-				{ x = -346,  y = -4542, z = 28 },	-- Cantina
-				{ x = -106,  y = -4461, z = 28 },	-- Medical Center
-				{ x = -23,   y = -4401, z = 28 },	-- Northern Shuttleport / entrance
-				{ x = -209,  y = -4534, z = 28 },	-- Capital / downtown
-				{ x = -329,  y = -4636, z = 28 },	-- Southern Shuttle area
-				{ x = -480,  y = -4499, z = 28 },	-- Cloning / western edge
+				{ x = -131,  y = -4723, z = 28 },
+				{ x = -60,   y = -4599, z = 28 },
+				{ x = -346,  y = -4542, z = 28 },
+				{ x = -106,  y = -4461, z = 28 },
+				{ x = -23,   y = -4401, z = 28 },
+				{ x = -209,  y = -4534, z = 28 },
+				{ x = -329,  y = -4636, z = 28 },
+				{ x = -480,  y = -4499, z = 28 },
 			},
 		},
 		{
 			name = "Tyrena",
 			spawnMultiplier = 1.0,
 			hotspots = {
-				{ x = -5031, y = -2287, z = 21 },	-- Starport
-				{ x = -5110, y = -2387, z = 21 },	-- Bank
-				{ x = -5285, y = -2522, z = 21 },	-- Cantina
-				{ x = -5005, y = -2476, z = 21 },	-- Medical Center
-				{ x = -5005, y = -2381, z = 21 },	-- Eastern Shuttleport
-				{ x = -5603, y = -2790, z = 21 },	-- Western Shuttleport
-				{ x = -5201, y = -2566, z = 21 },	-- Central plaza / hotel area
+				{ x = -5031, y = -2287, z = 21 },
+				{ x = -5110, y = -2387, z = 21 },
+				{ x = -5285, y = -2522, z = 21 },
+				{ x = -5005, y = -2476, z = 21 },
+				{ x = -5005, y = -2381, z = 21 },
+				{ x = -5603, y = -2790, z = 21 },
+				{ x = -5201, y = -2566, z = 21 },
 			},
 		},
 		{
 			name = "Bela Vistal",
-			spawnMultiplier = 0.5,		-- Smaller city - half the numbers
+			spawnMultiplier = 0.5,
 			hotspots = {
-				{ x = 6800,  y = -5700, z = 315 },	-- City center
-				{ x = 6735,  y = -5708, z = 315 },	-- Cantina
-				{ x = 6909,  y = -5581, z = 315 },	-- Medical / northern
-				{ x = 6637,  y = -5921, z = 315 },	-- Southern shuttle / entrance
-				{ x = 6937,  y = -5536, z = 315 },	-- Northern edge
-				{ x = 6853,  y = -5443, z = 315 },	-- Guild / upper area
+				{ x = 6800,  y = -5700, z = 315 },
+				{ x = 6735,  y = -5708, z = 315 },
+				{ x = 6909,  y = -5581, z = 315 },
+				{ x = 6637,  y = -5921, z = 315 },
+				{ x = 6937,  y = -5536, z = 315 },
+				{ x = 6853,  y = -5443, z = 315 },
 			},
 		},
 		{
 			name = "Doaba Guerfel",
 			spawnMultiplier = 1.0,
 			hotspots = {
-				{ x = 3340,  y = 5534, z = 300 },	-- Starport
-				{ x = 3207,  y = 5382, z = 300 },	-- Bank
-				{ x = 3268,  y = 5373, z = 300 },	-- Cantina
-				{ x = 3262,  y = 5422, z = 300 },	-- Medical Center
-				{ x = 3078,  y = 4995, z = 300 },	-- Southern shuttle / entrance
-				{ x = 3108,  y = 5205, z = 300 },	-- Hotel area
+				{ x = 3340,  y = 5534, z = 300 },
+				{ x = 3207,  y = 5382, z = 300 },
+				{ x = 3268,  y = 5373, z = 300 },
+				{ x = 3262,  y = 5422, z = 300 },
+				{ x = 3078,  y = 4995, z = 300 },
+				{ x = 3108,  y = 5205, z = 300 },
 			},
 		},
 		{
 			name = "Kor Vella",
 			spawnMultiplier = 1.0,
 			hotspots = {
-				{ x = -3138, y = 2815, z = 86 },	-- Starport
-				{ x = -3464, y = 3039, z = 86 },	-- Cantina
-				{ x = -3793, y = 3157, z = 86 },	-- Medical Center
-				{ x = -3126, y = 2790, z = 86 },	-- Bank / garage area
-				{ x = -3777, y = 3240, z = 86 },	-- Shuttleport
-				{ x = -3268, y = 3109, z = 86 },	-- Hotel / central
-				{ x = -3434, y = 3197, z = 86 },	-- Guild area
+				{ x = -3138, y = 2815, z = 86 },
+				{ x = -3464, y = 3039, z = 86 },
+				{ x = -3793, y = 3157, z = 86 },
+				{ x = -3126, y = 2790, z = 86 },
+				{ x = -3777, y = 3240, z = 86 },
+				{ x = -3268, y = 3109, z = 86 },
+				{ x = -3434, y = 3197, z = 86 },
 			},
 		},
 	},
 
-	-- Wave definitions - base numbers (applied after city multiplier)
 	waves = {
 		{
 			minCount = 80,
 			maxCount = 100,
 			templates = {
-				"meatlump_fool",
-				"meatlump_fool",
-				"meatlump_buffoon",
-				"meatlump_stooge",
-				"meatlump_oaf",
-				"meatlump_clod",
+				"meatlump_fool", "meatlump_fool", "meatlump_buffoon",
+				"meatlump_stooge", "meatlump_oaf", "meatlump_clod",
 			},
 		},
 		{
 			minCount = 80,
 			maxCount = 100,
 			templates = {
-				"meatlump_clod",
-				"meatlump_clod",
-				"meatlump_cretin",
-				"meatlump_loon",
-				"meatlump_stooge",
-				"meatlump_oaf",
+				"meatlump_clod", "meatlump_clod", "meatlump_cretin",
+				"meatlump_loon", "meatlump_stooge", "meatlump_oaf",
 			},
 		},
 		{
 			minCount = 80,
 			maxCount = 100,
 			templates = {
-				"meatlump_clod",
-				"meatlump_cretin",
-				"meatlump_loon",
-				"meatlump_loon",
-				"meatlump_oaf",
-				"meatlump_stooge",
+				"meatlump_clod", "meatlump_cretin", "meatlump_loon",
+				"meatlump_loon", "meatlump_oaf", "meatlump_stooge",
 			},
 		},
 	},
@@ -164,14 +148,12 @@ function MeatlumpCityRaid:scheduleNextRaid()
 end
 
 function MeatlumpCityRaid:beginWarningSequence()
-	-- 30-minute warning
 	self:broadcastWarning(30)
 
-	-- Schedule the rest of the countdown
-	createEvent(15 * 60 * 1000, "MeatlumpCityRaid", "warning15", nil, "")	-- in 15 min from now = 15 min remaining
-	createEvent(20 * 60 * 1000, "MeatlumpCityRaid", "warning10", nil, "")	-- in 20 min from now = 10 min remaining
-	createEvent(25 * 60 * 1000, "MeatlumpCityRaid", "warning5",  nil, "")	-- in 25 min from now = 5 min remaining
-	createEvent(30 * 60 * 1000, "MeatlumpCityRaid", "startRaid", nil, "")	-- full 30 min later
+	createEvent(15 * 60 * 1000, "MeatlumpCityRaid", "warning15", nil, "")
+	createEvent(20 * 60 * 1000, "MeatlumpCityRaid", "warning10", nil, "")
+	createEvent(25 * 60 * 1000, "MeatlumpCityRaid", "warning5",  nil, "")
+	createEvent(30 * 60 * 1000, "MeatlumpCityRaid", "startRaid", nil, "")
 end
 
 function MeatlumpCityRaid:warning15()
@@ -202,25 +184,19 @@ function MeatlumpCityRaid:startRaid()
 		print("[MeatlumpCityRaid] Meatlumps are raiding all Corellia cities!")
 	end
 
-	local startMsg = "The Meatlumps have made their move! Chaotic bands of the infamous street gang have poured into the streets of every major city on Corellia. Defend the towns!"
-	broadcastToGalaxy(startMsg)
+	broadcastToGalaxy("The Meatlumps have made their move! Chaotic bands of the infamous street gang have poured into the streets of every major city on Corellia. Defend the towns!")
 
 	writeSharedMemory("MeatlumpCityRaid:active", "1")
 
-	-- Initialize and spawn Wave 1 independently for every city
 	for _, city in ipairs(self.cities) do
 		writeSharedMemory("MeatlumpCityRaid:" .. city.name .. ":wave", "1")
 		writeSharedMemory("MeatlumpCityRaid:" .. city.name .. ":done", "0")
 		self:spawnWaveForCity(city, 1)
 	end
 
-	-- Start the per-city progress checker
 	createEvent(self.config.waveCheckInterval * 1000, "MeatlumpCityRaid", "checkAllCitiesProgress", nil, "")
-
-	-- Safety cleanup after max duration
 	createEvent(self.config.raidDuration * 1000, "MeatlumpCityRaid", "cleanupRaid", nil, "")
 
-	-- Schedule the next full raid cycle
 	self:scheduleNextRaid()
 end
 
@@ -232,9 +208,7 @@ function MeatlumpCityRaid:spawnWaveForCity(city, waveNumber)
 
 	local multiplier = city.spawnMultiplier or 1.0
 	local totalForCity = math.floor(getRandomNumber(waveDef.minCount, waveDef.maxCount) * multiplier)
-	if (totalForCity < 5) then
-		totalForCity = 5
-	end
+	if (totalForCity < 5) then totalForCity = 5 end
 
 	local hotspots = city.hotspots
 	local numHotspots = #hotspots
@@ -253,19 +227,19 @@ function MeatlumpCityRaid:spawnWaveForCity(city, waveNumber)
 
 		for i = 1, countThisHotspot do
 			local template = waveDef.templates[getRandomNumber(1, #waveDef.templates)]
-
 			local offsetX = getRandomNumber(-self.config.hotspotRadius, self.config.hotspotRadius)
 			local offsetY = getRandomNumber(-self.config.hotspotRadius, self.config.hotspotRadius)
 
-			local x = hotspot.x + offsetX
-			local y = hotspot.y + offsetY
-			local z = hotspot.z
-
-			local pMobile = spawnMobile("corellia", template, 0, x, z, y, getRandomNumber(0, 360), 0)
+			local pMobile = spawnMobile("corellia", template, 0, hotspot.x + offsetX, hotspot.z, hotspot.y + offsetY, getRandomNumber(0, 360), 0)
 
 			if (pMobile ~= nil) then
 				CreatureObject(pMobile):setPvpStatusBitmask(AGGRESSIVE + ATTACKABLE + ENEMY)
-				table.insert(cityOids, SceneObject(pMobile):getObjectID())
+
+				local oid = SceneObject(pMobile):getObjectID()
+				table.insert(cityOids, oid)
+
+				writeData(oid .. ":raidWave", waveNumber)
+				createObserver(OBJECTDESTRUCTION, "MeatlumpCityRaid", "onRaidMobDeath", pMobile)
 			end
 		end
 	end
@@ -276,6 +250,50 @@ function MeatlumpCityRaid:spawnWaveForCity(city, waveNumber)
 	if (self.config.announce) then
 		print("[MeatlumpCityRaid] Wave " .. waveNumber .. " spawned in " .. city.name .. " (" .. #cityOids .. " Meatlumps)")
 	end
+end
+
+-- ======================
+-- BONUS LOOT / CREDITS
+-- ======================
+function MeatlumpCityRaid:onRaidMobDeath(pVictim, pAttacker)
+	if (pVictim == nil) then
+		return 1
+	end
+
+	local oid = SceneObject(pVictim):getObjectID()
+	local wave = readData(oid .. ":raidWave") or 1
+	deleteData(oid .. ":raidWave")
+
+	local multiplier = self.config.creditMultipliers[wave] or 1.5
+	local extraChance = self.config.extraLootChances[wave] or 35
+	local levelBonus = self.config.extraLootLevelBonus[wave] or 10
+
+	local level = CreatureObject(pVictim):getLevel()
+	if (level < 1) then level = 15 end
+
+	local baseCredits = math.floor(level * 12 + getRandomNumber(40, 120))
+	local bonusCredits = math.floor(baseCredits * (multiplier - 1.0))
+
+	if (bonusCredits > 0) then
+		CreatureObject(pVictim):addCashCredits(bonusCredits, true)
+	end
+
+	local pInventory = CreatureObject(pVictim):getSlottedObject("inventory")
+	if (pInventory ~= nil) then
+		if (getRandomNumber(1, 100) <= extraChance) then
+			local lootLevel = level + levelBonus
+			local group = self.bonusLootGroups[getRandomNumber(1, #self.bonusLootGroups)]
+			createLoot(pInventory, group, lootLevel, true)
+		end
+
+		if (wave >= 3 and getRandomNumber(1, 100) <= math.floor(extraChance * 0.6)) then
+			local lootLevel = level + levelBonus + 5
+			local group = self.bonusLootGroups[getRandomNumber(1, #self.bonusLootGroups)]
+			createLoot(pInventory, group, lootLevel, true)
+		end
+	end
+
+	return 1
 end
 
 function MeatlumpCityRaid:checkAllCitiesProgress()
@@ -300,9 +318,7 @@ function MeatlumpCityRaid:checkAllCitiesProgress()
 			print("[MeatlumpCityRaid] All cities have cleared every wave!")
 		end
 
-		local endMsg = "The Meatlump assault has been driven back. The streets of Corellia's cities grow quieter once more... for now."
-		broadcastToGalaxy(endMsg)
-
+		broadcastToGalaxy("The Meatlump assault has been driven back. The streets of Corellia's cities grow quieter once more... for now.")
 		self:cleanupRaid()
 	end
 end
@@ -368,6 +384,7 @@ function MeatlumpCityRaid:cleanupRaid()
 					SceneObject(pObj):destroyObjectFromWorld()
 					totalRemaining = totalRemaining + 1
 				end
+				deleteData(oid .. ":raidWave")
 			end
 		end
 

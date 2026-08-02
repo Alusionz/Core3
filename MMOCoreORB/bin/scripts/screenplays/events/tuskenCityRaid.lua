@@ -6,31 +6,31 @@ TuskenCityRaid = ScreenPlay:new {
 	-- CONFIGURATION
 	-- ======================
 	config = {
-		-- Time between full raids (in seconds)
-		minInterval = 45 * 60,		-- 45 minutes
-		maxInterval = 90 * 60,		-- 90 minutes
-
-		-- Warning lead time before the actual raid starts
-		warningLeadTime = 30 * 60,		-- 30 minutes
-
-		-- Maximum total duration of a raid before remaining Tuskens are force-despawned
-		raidDuration = 35 * 60,		-- 35 minutes safety net
-
-		-- Random offset radius around each hotspot (meters)
+		minInterval = 45 * 60,
+		maxInterval = 90 * 60,
+		warningLeadTime = 30 * 60,
+		raidDuration = 35 * 60,
 		hotspotRadius = 40,
-
-		-- How often (seconds) to check if the current wave is mostly dead
 		waveCheckInterval = 12,
-
-		-- Wave is considered complete when this many or fewer remain alive
 		waveCompleteThreshold = 2,
-
-		-- Print server log messages
 		announce = true,
+
+		-- Bonus loot / credit multipliers by wave
+		-- Wave 1 = 1.5x, Wave 2 = 2.0x, Wave 3 = 2.5x
+		creditMultipliers = { [1] = 1.5, [2] = 2.0, [3] = 2.5 },
+		extraLootChances = { [1] = 35, [2] = 50, [3] = 70 },	-- % chance for an extra item
+		extraLootLevelBonus = { [1] = 10, [2] = 20, [3] = 35 },	-- added to creature level for the extra item
 	},
 
-	-- Progressive warning messages (minutes before raid)
-	-- %s will be replaced with the target city name
+	-- Loot groups used for the *extra* raid bonus item(s)
+	bonusLootGroups = {
+		"wearables_common",
+		"weapons_all",
+		"armor_all",
+		"junk",
+		"attachments",
+	},
+
 	warningMessages = {
 		[30] = "A dry wind carries strange whispers across Tatooine. Scouts report increased Tusken activity near the dunes surrounding %s. Travelers are urged to remain cautious.",
 		[15] = "The desert grows restless. Multiple Tusken war bands have been sighted moving toward %s. The Sand People may be preparing a coordinated strike.",
@@ -38,114 +38,91 @@ TuskenCityRaid = ScreenPlay:new {
 		[5]  = "This is not a false alarm. Tusken Raiders are massing on the approaches to %s. Citizens and visitors should prepare to defend the city.",
 	},
 
-	-- Cities that can be raided, each with multiple high-traffic hotspots
 	cities = {
 		{
 			name = "Bestine",
 			hotspots = {
-				{ x = -1374, y = -3629, z = 12 },	-- Starport
-				{ x = -1258, y = -3641, z = 12 },	-- Bank
-				{ x = -1006, y = -3544, z = 12 },	-- Cantina (east)
-				{ x = -1359, y = -3688, z = 12 },	-- Cantina (west)
-				{ x = -1300, y = -3501, z = 12 },	-- Medical Center
-				{ x = -1091, y = -3554, z = 12 },	-- Shuttleport
-				{ x = -1422, y = -3782, z = 12 },	-- Cloning / southern edge
+				{ x = -1374, y = -3629, z = 12 },
+				{ x = -1258, y = -3641, z = 12 },
+				{ x = -1006, y = -3544, z = 12 },
+				{ x = -1359, y = -3688, z = 12 },
+				{ x = -1300, y = -3501, z = 12 },
+				{ x = -1091, y = -3554, z = 12 },
+				{ x = -1422, y = -3782, z = 12 },
 			},
 		},
 		{
 			name = "Mos Eisley",
 			hotspots = {
-				{ x = 3608,  y = -4753, z = 5 },	-- Starport
-				{ x = 3499,  y = -4944, z = 5 },	-- Bank
-				{ x = 3468,  y = -4855, z = 5 },	-- Main Cantina
-				{ x = 3363,  y = -4586, z = 5 },	-- Lucky Despot Cantina
-				{ x = 3514,  y = -4773, z = 5 },	-- Medical Center
-				{ x = 3433,  y = -4658, z = 5 },	-- Shuttleport
-				{ x = 3423,  y = -5006, z = 5 },	-- Cloning (south)
-				{ x = 3305,  y = -4769, z = 5 },	-- Theater / western side
+				{ x = 3608,  y = -4753, z = 5 },
+				{ x = 3499,  y = -4944, z = 5 },
+				{ x = 3468,  y = -4855, z = 5 },
+				{ x = 3363,  y = -4586, z = 5 },
+				{ x = 3514,  y = -4773, z = 5 },
+				{ x = 3433,  y = -4658, z = 5 },
+				{ x = 3423,  y = -5006, z = 5 },
+				{ x = 3305,  y = -4769, z = 5 },
 			},
 		},
 		{
 			name = "Anchorhead",
 			hotspots = {
-				{ x =  38,   y = -5333, z = 52 },	-- Shuttleport
-				{ x = -156,  y = -5306, z = 52 },	-- Cantina
-				{ x =  70,   y = -5358, z = 52 },	-- Cloning Facility
-				{ x = 123,   y = -5364, z = 52 },	-- Tavern / center
-				{ x = 141,   y = -5357, z = 52 },	-- Eastern edge
+				{ x =  38,   y = -5333, z = 52 },
+				{ x = -156,  y = -5306, z = 52 },
+				{ x =  70,   y = -5358, z = 52 },
+				{ x = 123,   y = -5364, z = 52 },
+				{ x = 141,   y = -5357, z = 52 },
 			},
 		},
 		{
 			name = "Mos Espa",
 			hotspots = {
-				{ x = -2809, y = 2129, z = 5 },	-- Starport
-				{ x = -2969, y = 2322, z = 5 },	-- Bank
-				{ x = -2991, y = 2124, z = 5 },	-- Cantina
-				{ x = -3150, y = 2125, z = 5 },	-- Medical Center
-				{ x = -2793, y = 2179, z = 5 },	-- Shuttleport A
-				{ x = -2886, y = 1930, z = 5 },	-- Shuttleport B (south)
-				{ x = -3114, y = 2166, z = 5 },	-- Shuttleport C
-				{ x = -3093, y = 2271, z = 5 },	-- Cloning
+				{ x = -2809, y = 2129, z = 5 },
+				{ x = -2969, y = 2322, z = 5 },
+				{ x = -2991, y = 2124, z = 5 },
+				{ x = -3150, y = 2125, z = 5 },
+				{ x = -2793, y = 2179, z = 5 },
+				{ x = -2886, y = 1930, z = 5 },
+				{ x = -3114, y = 2166, z = 5 },
+				{ x = -3093, y = 2271, z = 5 },
 			},
 		},
 		{
 			name = "Wayfar",
 			hotspots = {
-				{ x = -5174, y = -6582, z = 75 },	-- City center
-				{ x = -5150, y = -6588, z = 75 },	-- Cantina area
-				{ x = -5273, y = -6549, z = 75 },	-- Western side
-				{ x = -5123, y = -6616, z = 75 },	-- Medical / south
-				{ x = -5050, y = -6627, z = 75 },	-- Eastern edge
+				{ x = -5174, y = -6582, z = 75 },
+				{ x = -5150, y = -6588, z = 75 },
+				{ x = -5273, y = -6549, z = 75 },
+				{ x = -5123, y = -6616, z = 75 },
+				{ x = -5050, y = -6627, z = 75 },
 			},
 		},
 	},
 
-	-- Wave definitions
-	-- Wave 1 is the big push; later waves have fewer but tougher Tuskens
 	waves = {
-		-- Wave 1: mass of raiders + warriors/snipers
 		{
 			minCount = 50,
 			maxCount = 70,
 			templates = {
-				"tusken_raider",
-				"tusken_raider",
-				"tusken_raider",
-				"tusken_raider",
-				"tusken_warrior",
-				"tusken_warrior",
-				"tusken_sniper",
+				"tusken_raider", "tusken_raider", "tusken_raider", "tusken_raider",
+				"tusken_warrior", "tusken_warrior", "tusken_sniper",
 			},
 		},
-
-		-- Wave 2: mid-tier pressure (fewer, meaner)
 		{
 			minCount = 35,
 			maxCount = 50,
 			templates = {
-				"tusken_warrior",
-				"tusken_warrior",
-				"tusken_sniper",
-				"tusken_sniper",
-				"tusken_captain",
-				"tusken_captain",
-				"tusken_berserker",
-				"tusken_berserker",
+				"tusken_warrior", "tusken_warrior", "tusken_sniper", "tusken_sniper",
+				"tusken_captain", "tusken_captain", "tusken_berserker", "tusken_berserker",
 			},
 		},
-
-		-- Wave 3 (final): elite / champion push
 		{
 			minCount = 20,
 			maxCount = 30,
 			templates = {
-				"tusken_captain",
-				"tusken_elite_guard",
-				"tusken_berserker",
-				"tusken_blood_champion",
-				"tusken_carnage_champion",
-				"tusken_raid_champion",
-				"tusken_war_master",
+				"tusken_captain", "tusken_elite_guard", "tusken_berserker",
+				"tusken_blood_champion", "tusken_carnage_champion",
+				"tusken_raid_champion", "tusken_war_master",
 			},
 		},
 	},
@@ -168,14 +145,11 @@ function TuskenCityRaid:scheduleNextRaid()
 end
 
 function TuskenCityRaid:beginWarningSequence()
-	-- Pick the target city now so the warnings can name it
 	local city = self.cities[getRandomNumber(1, #self.cities)]
 	writeSharedMemory("TuskenCityRaid:cityName", city.name)
 
-	-- 30-minute warning
 	self:broadcastWarning(30)
 
-	-- Schedule the rest of the countdown
 	createEvent(15 * 60 * 1000, "TuskenCityRaid", "warning15", nil, "")
 	createEvent(20 * 60 * 1000, "TuskenCityRaid", "warning10", nil, "")
 	createEvent(25 * 60 * 1000, "TuskenCityRaid", "warning5",  nil, "")
@@ -199,8 +173,7 @@ function TuskenCityRaid:broadcastWarning(minutes)
 	local template = self.warningMessages[minutes]
 
 	if (template ~= nil) then
-		local msg = string.format(template, cityName)
-		broadcastToGalaxy(msg)
+		broadcastToGalaxy(string.format(template, cityName))
 	end
 
 	if (self.config.announce) then
@@ -213,7 +186,6 @@ function TuskenCityRaid:startRaid()
 	local city = self:getCityByName(cityName)
 
 	if (city == nil) then
-		-- Safety fallback
 		city = self.cities[getRandomNumber(1, #self.cities)]
 		writeSharedMemory("TuskenCityRaid:cityName", city.name)
 	end
@@ -222,8 +194,7 @@ function TuskenCityRaid:startRaid()
 		print("[TuskenCityRaid] Tusken Raiders are attacking " .. city.name .. "!")
 	end
 
-	local startMsg = string.format("The Sand People have struck! Tusken Raiders pour into the streets of %s. Defend the city!", city.name)
-	broadcastToGalaxy(startMsg)
+	broadcastToGalaxy(string.format("The Sand People have struck! Tusken Raiders pour into the streets of %s. Defend the city!", city.name))
 
 	writeSharedMemory("TuskenCityRaid:currentWave", "1")
 	writeSharedMemory("TuskenCityRaid:active", "1")
@@ -255,9 +226,6 @@ function TuskenCityRaid:spawnWave(waveNumber)
 	local city = self:getCityByName(cityName)
 
 	if (city == nil) then
-		if (self.config.announce) then
-			print("[TuskenCityRaid] ERROR: could not find city data for " .. tostring(cityName))
-		end
 		return
 	end
 
@@ -279,19 +247,20 @@ function TuskenCityRaid:spawnWave(waveNumber)
 
 		for i = 1, countThisHotspot do
 			local template = waveDef.templates[getRandomNumber(1, #waveDef.templates)]
-
 			local offsetX = getRandomNumber(-self.config.hotspotRadius, self.config.hotspotRadius)
 			local offsetY = getRandomNumber(-self.config.hotspotRadius, self.config.hotspotRadius)
 
-			local x = hotspot.x + offsetX
-			local y = hotspot.y + offsetY
-			local z = hotspot.z
-
-			local pMobile = spawnMobile("tatooine", template, 0, x, z, y, getRandomNumber(0, 360), 0)
+			local pMobile = spawnMobile("tatooine", template, 0, hotspot.x + offsetX, hotspot.z, hotspot.y + offsetY, getRandomNumber(0, 360), 0)
 
 			if (pMobile ~= nil) then
 				CreatureObject(pMobile):setPvpStatusBitmask(AGGRESSIVE + ATTACKABLE + ENEMY)
-				table.insert(spawnedOids, SceneObject(pMobile):getObjectID())
+
+				local oid = SceneObject(pMobile):getObjectID()
+				table.insert(spawnedOids, oid)
+
+				-- Track which wave this mob belongs to + attach death observer for bonus loot
+				writeData(oid .. ":raidWave", waveNumber)
+				createObserver(OBJECTDESTRUCTION, "TuskenCityRaid", "onRaidMobDeath", pMobile)
 			end
 		end
 	end
@@ -300,8 +269,57 @@ function TuskenCityRaid:spawnWave(waveNumber)
 	writeSharedMemory("TuskenCityRaid:currentWave", tostring(waveNumber))
 
 	if (self.config.announce) then
-		print("[TuskenCityRaid] Wave " .. waveNumber .. " spawned across " .. city.name .. " (" .. #spawnedOids .. " Tuskens at " .. numHotspots .. " hotspots)")
+		print("[TuskenCityRaid] Wave " .. waveNumber .. " spawned across " .. city.name .. " (" .. #spawnedOids .. " Tuskens)")
 	end
+end
+
+-- ======================
+-- BONUS LOOT / CREDITS
+-- ======================
+function TuskenCityRaid:onRaidMobDeath(pVictim, pAttacker)
+	if (pVictim == nil) then
+		return 1
+	end
+
+	local oid = SceneObject(pVictim):getObjectID()
+	local wave = readData(oid .. ":raidWave") or 1
+	deleteData(oid .. ":raidWave")
+
+	local multiplier = self.config.creditMultipliers[wave] or 1.5
+	local extraChance = self.config.extraLootChances[wave] or 35
+	local levelBonus = self.config.extraLootLevelBonus[wave] or 10
+
+	-- Extra credits on the corpse (scaled)
+	-- Base approximates normal credit drop; we add the *bonus* portion so total feels like the multiplier
+	local level = CreatureObject(pVictim):getLevel()
+	if (level < 1) then level = 20 end
+
+	local baseCredits = math.floor(level * 15 + getRandomNumber(50, 150))
+	local bonusCredits = math.floor(baseCredits * (multiplier - 1.0))
+
+	if (bonusCredits > 0) then
+		CreatureObject(pVictim):addCashCredits(bonusCredits, true)
+	end
+
+	-- Chance for one (or on later waves, sometimes two) extra higher-level item(s) on the corpse
+	local pInventory = CreatureObject(pVictim):getSlottedObject("inventory")
+	if (pInventory ~= nil) then
+		local roll = getRandomNumber(1, 100)
+		if (roll <= extraChance) then
+			local lootLevel = level + levelBonus
+			local group = self.bonusLootGroups[getRandomNumber(1, #self.bonusLootGroups)]
+			createLoot(pInventory, group, lootLevel, true)
+		end
+
+		-- Wave 3 gets a second chance at another item
+		if (wave >= 3 and getRandomNumber(1, 100) <= math.floor(extraChance * 0.6)) then
+			local lootLevel = level + levelBonus + 5
+			local group = self.bonusLootGroups[getRandomNumber(1, #self.bonusLootGroups)]
+			createLoot(pInventory, group, lootLevel, true)
+		end
+	end
+
+	return 1
 end
 
 function TuskenCityRaid:checkWaveProgress()
@@ -344,13 +362,10 @@ function TuskenCityRaid:advanceOrFinish()
 		createEvent(self.config.waveCheckInterval * 1000, "TuskenCityRaid", "checkWaveProgress", nil, "")
 	else
 		if (self.config.announce) then
-			local cityName = readSharedMemory("TuskenCityRaid:cityName") or "the city"
-			print("[TuskenCityRaid] All waves defeated at " .. cityName .. "!")
+			print("[TuskenCityRaid] All waves defeated at " .. (readSharedMemory("TuskenCityRaid:cityName") or "the city") .. "!")
 		end
 
-		local endMsg = string.format("The Tusken assault on %s has been driven back into the desert. For now, the city stands.", readSharedMemory("TuskenCityRaid:cityName") or "the city")
-		broadcastToGalaxy(endMsg)
-
+		broadcastToGalaxy(string.format("The Tusken assault on %s has been driven back into the desert. For now, the city stands.", readSharedMemory("TuskenCityRaid:cityName") or "the city"))
 		self:cleanupRaid()
 	end
 end
@@ -374,6 +389,7 @@ function TuskenCityRaid:cleanupRaid()
 				SceneObject(pObj):destroyObjectFromWorld()
 				remaining = remaining + 1
 			end
+			deleteData(oid .. ":raidWave")
 		end
 
 		if (self.config.announce and remaining > 0) then
