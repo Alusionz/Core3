@@ -2784,7 +2784,7 @@ void PlayerObjectImplementation::setForcePower(int fp, bool notifyClient) {
                   } else {
                     experienceList.set("jedi_general", newJedi);
                   }
-                  sessionStatsActivityXp += actualAdd;
+                  sessionStatsActivityXP += actualAdd;
                 }
               }
         }
