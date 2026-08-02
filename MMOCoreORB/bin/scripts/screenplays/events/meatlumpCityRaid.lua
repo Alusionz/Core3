@@ -14,49 +14,105 @@ MeatlumpCityRaid = ScreenPlay:new {
 		warningLeadTime = 30 * 60,		-- 30 minutes
 
 		-- Maximum total duration of a raid before remaining Meatlumps are force-despawned
-		raidDuration = 30 * 60,		-- 30 minutes safety net
+		raidDuration = 45 * 60,		-- 45 minutes safety net (bigger event needs more time)
 
-		-- How far from the city center the Meatlumps can spawn (in meters)
-		spawnRadius = 70,
+		-- Random offset radius around each hotspot (meters)
+		hotspotRadius = 35,
 
 		-- How often (seconds) to check if the current wave is mostly dead
-		waveCheckInterval = 15,
+		waveCheckInterval = 20,
 
-		-- Wave is considered complete when this many or fewer remain alive
-		waveCompleteThreshold = 2,
+		-- Wave is considered complete when this many or fewer remain alive across ALL cities
+		waveCompleteThreshold = 8,
 
 		-- Print server log messages
 		announce = true,
 	},
 
-	-- All major Corellia cities (raid hits every one)
+	-- All major Corellia cities with multiple high-traffic hotspots
+	-- Spawns are distributed across these points so the city feels under attack from multiple directions
 	cities = {
-		{ name = "Coronet",       x =  -180, y = -4700, z = 28 },
-		{ name = "Tyrena",        x = -5200, y = -2500, z = 21 },
-		{ name = "Bela Vistal",   x =  6800, y = -5700, z = 315 },
-		{ name = "Doaba Guerfel", x =  3300, y =  5400, z = 300 },
-		{ name = "Kor Vella",     x = -3400, y =  3100, z = 86 },
+		{
+			name = "Coronet",
+			hotspots = {
+				{ x = -131,  y = -4723, z = 28 },	-- Starport
+				{ x = -60,   y = -4599, z = 28 },	-- Bank
+				{ x = -346,  y = -4542, z = 28 },	-- Cantina
+				{ x = -106,  y = -4461, z = 28 },	-- Medical Center
+				{ x = -23,   y = -4401, z = 28 },	-- Northern Shuttleport / entrance
+				{ x = -209,  y = -4534, z = 28 },	-- Capital / downtown
+				{ x = -329,  y = -4636, z = 28 },	-- Southern Shuttle area
+				{ x = -480,  y = -4499, z = 28 },	-- Cloning / western edge
+			},
+		},
+		{
+			name = "Tyrena",
+			hotspots = {
+				{ x = -5031, y = -2287, z = 21 },	-- Starport
+				{ x = -5110, y = -2387, z = 21 },	-- Bank
+				{ x = -5285, y = -2522, z = 21 },	-- Cantina
+				{ x = -5005, y = -2476, z = 21 },	-- Medical Center
+				{ x = -5005, y = -2381, z = 21 },	-- Eastern Shuttleport
+				{ x = -5603, y = -2790, z = 21 },	-- Western Shuttleport
+				{ x = -5201, y = -2566, z = 21 },	-- Central plaza / hotel area
+			},
+		},
+		{
+			name = "Bela Vistal",
+			hotspots = {
+				{ x = 6800,  y = -5700, z = 315 },	-- City center
+				{ x = 6735,  y = -5708, z = 315 },	-- Cantina
+				{ x = 6909,  y = -5581, z = 315 },	-- Medical / northern
+				{ x = 6637,  y = -5921, z = 315 },	-- Southern shuttle / entrance
+				{ x = 6937,  y = -5536, z = 315 },	-- Northern edge
+				{ x = 6853,  y = -5443, z = 315 },	-- Guild / upper area
+			},
+		},
+		{
+			name = "Doaba Guerfel",
+			hotspots = {
+				{ x = 3340,  y = 5534, z = 300 },	-- Starport
+				{ x = 3207,  y = 5382, z = 300 },	-- Bank
+				{ x = 3268,  y = 5373, z = 300 },	-- Cantina
+				{ x = 3262,  y = 5422, z = 300 },	-- Medical Center
+				{ x = 3078,  y = 4995, z = 300 },	-- Southern shuttle / entrance
+				{ x = 3108,  y = 5205, z = 300 },	-- Hotel area
+			},
+		},
+		{
+			name = "Kor Vella",
+			hotspots = {
+				{ x = -3138, y = 2815, z = 86 },	-- Starport
+				{ x = -3464, y = 3039, z = 86 },	-- Cantina
+				{ x = -3793, y = 3157, z = 86 },	-- Medical Center
+				{ x = -3126, y = 2790, z = 86 },	-- Bank / garage area
+				{ x = -3777, y = 3240, z = 86 },	-- Shuttleport
+				{ x = -3268, y = 3109, z = 86 },	-- Hotel / central
+				{ x = -3434, y = 3197, z = 86 },	-- Guild area
+			},
+		},
 	},
 
-	-- Wave definitions using available Meatlump templates
+	-- Wave definitions - consistent BIG numbers for every wave
 	waves = {
-		-- Wave 1: street-level rabble
+		-- Wave 1
 		{
-			minCount = 6,
-			maxCount = 10,
+			minCount = 80,
+			maxCount = 100,
 			templates = {
 				"meatlump_fool",
 				"meatlump_fool",
 				"meatlump_buffoon",
 				"meatlump_stooge",
 				"meatlump_oaf",
+				"meatlump_clod",
 			},
 		},
 
-		-- Wave 2: denser, slightly meaner bunch
+		-- Wave 2
 		{
-			minCount = 5,
-			maxCount = 9,
+			minCount = 80,
+			maxCount = 100,
 			templates = {
 				"meatlump_clod",
 				"meatlump_clod",
@@ -67,16 +123,17 @@ MeatlumpCityRaid = ScreenPlay:new {
 			},
 		},
 
-		-- Wave 3: final chaotic push
+		-- Wave 3 (final)
 		{
-			minCount = 4,
-			maxCount = 7,
+			minCount = 80,
+			maxCount = 100,
 			templates = {
 				"meatlump_clod",
 				"meatlump_cretin",
 				"meatlump_loon",
 				"meatlump_loon",
 				"meatlump_oaf",
+				"meatlump_stooge",
 			},
 		},
 	},
@@ -100,16 +157,13 @@ function MeatlumpCityRaid:scheduleNextRaid()
 end
 
 function MeatlumpCityRaid:issueWarning()
-	-- 30-minute lore-flavored warning to players on Corellia (via galaxy broadcast with clear planet context)
 	local warningMsg = "Rumors are spreading across Corellia... the Meatlumps are stirring. Whispers of coordinated mischief and sudden raids on city streets have begun to circulate. Citizens are advised to stay alert."
-
 	broadcastToGalaxy(warningMsg)
 
 	if (self.config.announce) then
 		print("[MeatlumpCityRaid] 30-minute warning issued: Meatlumps preparing to strike all Corellia cities.")
 	end
 
-	-- Actual raid starts after the warning lead time
 	createEvent(self.config.warningLeadTime * 1000, "MeatlumpCityRaid", "startRaid", nil, "")
 end
 
@@ -124,7 +178,7 @@ function MeatlumpCityRaid:startRaid()
 	writeSharedMemory("MeatlumpCityRaid:currentWave", "1")
 	writeSharedMemory("MeatlumpCityRaid:active", "1")
 
-	-- Spawn first wave in EVERY city
+	-- Spawn first wave in EVERY city across multiple hotspots
 	self:spawnWaveAcrossAllCities(1)
 
 	-- Start the kill-progress checker
@@ -146,28 +200,43 @@ function MeatlumpCityRaid:spawnWaveAcrossAllCities(waveNumber)
 	local allOids = {}
 
 	for _, city in ipairs(self.cities) do
-		local count = getRandomNumber(waveDef.minCount, waveDef.maxCount)
+		local totalForCity = getRandomNumber(waveDef.minCount, waveDef.maxCount)
+		local hotspots = city.hotspots
+		local numHotspots = #hotspots
 
-		for i = 1, count do
-			local template = waveDef.templates[getRandomNumber(1, #waveDef.templates)]
+		-- Distribute the total roughly evenly across hotspots (with leftover going to random ones)
+		local basePerHotspot = math.floor(totalForCity / numHotspots)
+		local remainder = totalForCity % numHotspots
 
-			local offsetX = getRandomNumber(-self.config.spawnRadius, self.config.spawnRadius)
-			local offsetY = getRandomNumber(-self.config.spawnRadius, self.config.spawnRadius)
+		for h = 1, numHotspots do
+			local countThisHotspot = basePerHotspot
+			if (h <= remainder) then
+				countThisHotspot = countThisHotspot + 1
+			end
 
-			local x = city.x + offsetX
-			local y = city.y + offsetY
-			local z = city.z
+			local hotspot = hotspots[h]
 
-			local pMobile = spawnMobile("corellia", template, 0, x, z, y, getRandomNumber(0, 360), 0)
+			for i = 1, countThisHotspot do
+				local template = waveDef.templates[getRandomNumber(1, #waveDef.templates)]
 
-			if (pMobile ~= nil) then
-				CreatureObject(pMobile):setPvpStatusBitmask(AGGRESSIVE + ATTACKABLE + ENEMY)
-				table.insert(allOids, SceneObject(pMobile):getObjectID())
+				local offsetX = getRandomNumber(-self.config.hotspotRadius, self.config.hotspotRadius)
+				local offsetY = getRandomNumber(-self.config.hotspotRadius, self.config.hotspotRadius)
+
+				local x = hotspot.x + offsetX
+				local y = hotspot.y + offsetY
+				local z = hotspot.z
+
+				local pMobile = spawnMobile("corellia", template, 0, x, z, y, getRandomNumber(0, 360), 0)
+
+				if (pMobile ~= nil) then
+					CreatureObject(pMobile):setPvpStatusBitmask(AGGRESSIVE + ATTACKABLE + ENEMY)
+					table.insert(allOids, SceneObject(pMobile):getObjectID())
+				end
 			end
 		end
 
 		if (self.config.announce) then
-			print("[MeatlumpCityRaid] Wave " .. waveNumber .. " spawned near " .. city.name .. " (" .. count .. " Meatlumps)")
+			print("[MeatlumpCityRaid] Wave " .. waveNumber .. " spawned across " .. city.name .. " (" .. totalForCity .. " Meatlumps at " .. numHotspots .. " hotspots)")
 		end
 	end
 
