@@ -39,7 +39,7 @@ TuskenCityRaid = ScreenPlay:new {
 	-- Wave definitions
 	-- Each wave has its own template list and size range
 	waves = {
-		-- Wave 1: basic + a few warriors
+		-- Wave 1: basic + a few warriors/snipers
 		{
 			minCount = 8,
 			maxCount = 12,
@@ -54,7 +54,7 @@ TuskenCityRaid = ScreenPlay:new {
 			},
 		},
 
-		-- Wave 2: more dangerous mix
+		-- Wave 2: mid-tier pressure
 		{
 			minCount = 6,
 			maxCount = 10,
@@ -64,20 +64,24 @@ TuskenCityRaid = ScreenPlay:new {
 				"tusken_sniper",
 				"tusken_sniper",
 				"tusken_captain",
+				"tusken_captain",
+				"tusken_berserker",
 				"tusken_berserker",
 			},
 		},
 
-		-- Wave 3 (final): elite push
+		-- Wave 3 (final): elite / champion push
 		{
 			minCount = 4,
 			maxCount = 7,
 			templates = {
 				"tusken_captain",
-				"tusken_captain",
+				"tusken_elite_guard",
 				"tusken_berserker",
-				"tusken_warlord",
-				"tusken_elite",
+				"tusken_blood_champion",
+				"tusken_carnage_champion",
+				"tusken_raid_champion",
+				"tusken_war_master",
 			},
 		},
 	},
