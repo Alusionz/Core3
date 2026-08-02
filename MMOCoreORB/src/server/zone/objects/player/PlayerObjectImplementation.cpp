@@ -2741,7 +2741,9 @@ void PlayerObjectImplementation::setForcePowerMax(int newValue, bool notifyClien
 }
 
 void PlayerObjectImplementation::setForcePower(int fp, bool notifyClient) {
-        if (fp == getForcePower())
+        int previousForce = getForcePower();
+  
+        if (fp == previousForce)
                 return;
 
         // Set forcepower back to 0 incase player goes below
@@ -2757,6 +2759,35 @@ void PlayerObjectImplementation::setForcePower(int fp, bool notifyClient) {
                 activateForcePowerRegen();
         }
 
+        
+  //Pre-P9 style: any Force spent grants Jedi XP
+        if (fp < previousForce && getJediState() > 0){
+              int spent = previousForce - fp;
+              int jediXp = (int)(spent * 1.5f);
+
+              if (jediXp > 0) {
+                int prevJedi = experienceList.contains("jedi_general") ? experienceList.get("jedi_general") : 0;
+                int newJedi = prevJedi + jediXp;
+                int jediCap = 2000;
+                if (xpTypeCapList.contains("jedi_general"))
+                  jediCap = xpTypeCapList.get("jedi_general");
+                if (newJedi > jediCap)
+                  newJedi = jediCap;
+                int actualAdd = newJedi - prevJedi;
+                if (actualAdd > 0) {
+                  if (notifyClient) {
+                    PlayerObjectDeltaMessage8* dplayXp = new PlayerObjectDeltaMessage8(this);
+                    dplayXp->startUpdate(0);
+                    experienceList.set("jedi_general", newJedi, dplayXp, 1);
+                    dplayXp->close();
+                    sendMessage(dplayXp);
+                  } else {
+                    experienceList.set("jedi_general", newJedi);
+                  }
+                  sessionStatsActivityXp += actualAdd;
+                }
+              }
+        }
         forcePower = fp;
 
         if (notifyClient == true){
