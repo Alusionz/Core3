@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-PLACEHOLDER_WILL_FAIL
-=======
 --Copyright (C) 2010 <SWGEmu>
 
 
@@ -143,4 +140,3 @@ object_weapon_melee_2h_sword_crafted_saber_sword_lightsaber_two_handed_gen1 = ob
 }
 
 ObjectTemplates:addTemplate(object_weapon_melee_2h_sword_crafted_saber_sword_lightsaber_two_handed_gen1, "object/weapon/melee/2h_sword/crafted_saber/sword_lightsaber_two_handed_gen1.iff")
->>>>>>> b336e41f99 (Pre-P9: lightsaber xpType -> style-specific (1H/2H/polearm))
