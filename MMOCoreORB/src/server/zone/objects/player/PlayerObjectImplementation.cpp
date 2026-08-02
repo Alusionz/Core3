@@ -737,6 +737,8 @@ int PlayerObjectImplementation::addExperience(TransactionLog& trx, const String&
                 trx.addState("activityXP", xp);
         }
 
+        int originalXpForJediBonus = (xp > 0 && xpType == "combat_general" && getJediState() > 0) ? xp : 0;
+  
         if (experienceList.contains(xpType)) {
                 xp += experienceList.get(xpType);
 
@@ -777,6 +779,32 @@ int PlayerObjectImplementation::addExperience(TransactionLog& trx, const String&
         }
 
         trx.setExperience(xpType, valueToAdd, experienceList.get(xpType));
+
+        if (originalXpForJediBonus > 0 && valueToAdd > 0) {
+          int jediKillXp = originalXpForJediBonus * 2;
+          if (jediKillXp > 0) {
+            int prevJedi = experienceList.contains("jedi_general") ? experienceList.get("jedi_general") : 0;
+            int newJedi = prevJedi + jediKillXp;
+            int jediCap = 2000;
+            if (xpTypeCapList.contains("jedi_general"))
+              jediCap = xpTypeCapList.get("jedi_general");
+            if (newJedi > jediCap)
+              newJedi = jediCap;
+            int actualJediAdd = newJedi - prevJedi;
+            if (actualJediAdd > 0) {
+              if (notifyClient) {
+                PlayerObjectDeltaMessage8* dplayJedi = new PlayerObjectDeltaMessage8(this);
+                dplayJedi->startUpdate(0);
+                experienceList.set("jedi_general", newJedi, dplayJedi, 1);
+                dplayJedi->close();
+                sendMessage(dplayJedi);
+              } else {
+                experienceList.set("jedi_general", newJedi);
+              }
+              sessionStatsActivityXP += actualJediAdd;
+            }
+          }
+        }
 
         return valueToAdd;
 }
