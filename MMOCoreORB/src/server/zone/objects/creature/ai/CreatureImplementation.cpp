@@ -44,7 +44,7 @@ void CreatureImplementation::fillObjectMenuResponse(ObjectMenuResponse* menuResp
 			menuResponse->addRadialMenuItemToRadialID(112, 236, 3, "@sui:harvest_bone");
 	}
 
-	if (canTameMe(player) && player->hasSkill("outdoors_creaturehandler_novice") && getChanceToTame(player) >= 15) {
+	if (canTameMe(player) && player->hasSkill("outdoors_creaturehandler_novice") && getChanceToTame(player) >= 5) {
 		menuResponse->addRadialMenuItem(159, 3, "@pet/pet_menu:menu_tame");
 	}
 }
@@ -329,7 +329,8 @@ float CreatureImplementation::getChanceToTame(CreatureObject* player) {
 	else
 		skill += player->getSkillMod("tame_non_aggro");
 
-	float chanceToTame = tamingChance + skill - (cl + ferocity);
+	// Pre-P9: player-favoring tame odds (+25 flat, half CL/ferocity penalty)
+	float chanceToTame = tamingChance + skill - ((cl + ferocity) * 0.5f) + 25.0f;
 
 	return chanceToTame;
 }
