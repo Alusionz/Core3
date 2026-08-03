@@ -33,7 +33,7 @@ naboo_northern_plains = {
 			minDifficulty = 50,
 			maxDifficulty = 500,
 			numberToSpawn = 15,
-			weighting = 5,
+			weighting = 25,
 			size = 20,
 		},
 		{
