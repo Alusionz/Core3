@@ -7,13 +7,13 @@ nightsister_elder = Creature:new {
 	faction = "nightsister",
 	level = 278,
 	chanceHit = 27.25,
-	damageMin = 1520,
-	damageMax = 2750,
+	damageMin = 456,
+	damageMax = 825,
 	baseXp = 26654,
 	baseHAM = 140000,
 	baseHAMmax = 175000,
-	armor = 3,
-	resists = {200,25,25,200,200,200,200,200,-1},
+	armor = 2,
+	resists = {100,25,25,100,100,100,100,100,-1},
 	meatType = "",
 	meatAmount = 0,
 	hideType = "",
@@ -37,14 +37,9 @@ nightsister_elder = Creature:new {
 		}
 	},
 
-	-- Primary and secondary weapon should be different types (rifle/carbine, carbine/pistol, rifle/unarmed, etc)
-	-- Unarmed should be put on secondary unless the mobile doesn't use weapons, in which case "unarmed" should be put primary and "none" as secondary
 	primaryWeapon = "force_sword",
 	secondaryWeapon = "force_sword_ranged",
 	conversationTemplate = "",
-
-	-- primaryAttacks and secondaryAttacks should be separate skill groups specific to the weapon type listed in primaryWeapon and secondaryWeapon
-	-- Use merge() to merge groups in creatureskills.lua together. If a weapon is set to "none", set the attacks variable to empty brackets
 	primaryAttacks = merge(tkamaster,swordsmanmaster,fencermaster,pikemanmaster,brawlermaster,forcepowermaster),
 	secondaryAttacks = forcepowermaster
 }
