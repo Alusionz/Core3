@@ -246,42 +246,44 @@ void PetControlDeviceImplementation::callObject(CreatureObject* player, bool ini
                 maxPets = 3;
         }
 
-        for (int i = 0; i < ghost->getActivePetsSize(); ++i) { 
-                ManagedReference<AiAgent*> object = ghost->getActivePet(i);
+        for (int i = 0; i < ghost->getActivePetsSize(); ++i) {
+		ManagedReference<AiAgent*> object = ghost->getActivePet(i);
 
-                if (object != nullptr) {
-                        if (object->isCreature() && petType == PetManager::CREATUREPET) {
-                          const CreatureTemplate* activePetTemplate = object->getCreatureTemplate();
+		if (object != nullptr) {
+			if (object->isCreature() && petType == PetManager::CREATUREPET) {
+				const CreatureTemplate* activePetTemplate = object->getCreatureTemplate();
 
-                        if (activePetTemplate == nullptr || activePetTemplate->getTemplateName() == "at_st")
-                            continue;
+				if (activePetTemplate == nullptr || activePetTemplate->getTemplateName() == "at_st")
+					continue;
 
-                        if (++currentlySpawned >= maxPets) {
-                            player->sendSystemMessage("@pet/pet_menu:at_max"); // You already have the maximum number of pets of this type that you can call.
-                            return;
-                        }
-                }
-                        } else if (object->isCreature() && petType == PetManager::FACTIONPET) {
-                                const CreatureTemplate* activePetTemplate = object->getCreatureTemplate();
-                                const CreatureTemplate* callingPetTemplate = pet->getCreatureTemplate();
+				if (++currentlySpawned >= maxPets) {
+					player->sendSystemMessage("@pet/pet_menu:at_max"); // You already have the maximum number of pets of this type that you can call.
+					return;
+				}
+			} else if (object->isNonPlayerCreatureObject() && petType == PetManager::FACTIONPET) {
+				if (++currentlySpawned >= maxPets) {
+					player->sendSystemMessage("@pet/pet_menu:at_max"); // You already have the maximum number of pets of this type that you can call.
+					return;
+				}
+			} else if (object->isCreature() && petType == PetManager::FACTIONPET) {
+				const CreatureTemplate* activePetTemplate = object->getCreatureTemplate();
+				const CreatureTemplate* callingPetTemplate = pet->getCreatureTemplate();
 
-                                if (activePetTemplate == nullptr || callingPetTemplate == nullptr || activePetTemplate->getTemplateName() != "at_st")
-                                        continue;
+				if (activePetTemplate == nullptr || callingPetTemplate == nullptr || activePetTemplate->getTemplateName() != "at_st")
+					continue;
 
-                                if (++currentlySpawned >= maxPets || (activePetTemplate->getTemplateName() == "at_st" && callingPetTemplate->getTemplateName() == "at_st")) {
-                                        player->sendSystemMessage("@pet/pet_menu:at_max"); // You already have the maximum number of pets of this type that you can call.
-                                        return;
-                                }
-                        } else if (object->isDroidObject() && petType == PetManager::DROIDPET) {
-                                if (++currentlySpawned >= maxPets) {
-                                        player->sendSystemMessage("@pet/pet_menu:at_max"); // You already have the maximum number of pets of this type that you can call.
-                                        return;
-                                }
-                        }
-
-                }
+				if (++currentlySpawned >= maxPets || (activePetTemplate->getTemplateName() == "at_st" && callingPetTemplate->getTemplateName() == "at_st")) {
+					player->sendSystemMessage("@pet/pet_menu:at_max"); // You already have the maximum number of pets of this type that you can call.
+					return;
+				}
+			} else if (object->isDroidObject() && petType == PetManager::DROIDPET) {
+				if (++currentlySpawned >= maxPets) {
+					player->sendSystemMessage("@pet/pet_menu:at_max"); // You already have the maximum number of pets of this type that you can call.
+					return;
+				}
+			}
+		}
         }
-
         ManagedReference<TradeSession*> tradeContainer = player->getActiveSession(SessionFacadeType::TRADE).castTo<TradeSession*>();
 
         if (tradeContainer != nullptr) {
