@@ -258,6 +258,10 @@ int ForceHealQueueCommand::runCommand(CreatureObject* creature, CreatureObject* 
 
 		VisibilityManager::instance()->increaseVisibility(creature, visMod);
 
+		// Pre-P9: any successful Force heal (self or other) applies Jedi TEF
+		if (!playerObject->hasGodMode())
+			playerObject->updateLastBhPvpCombatActionTimestamp();
+
 		if (!selfHeal)
 			checkForTef(creature, targetCreature);
 
