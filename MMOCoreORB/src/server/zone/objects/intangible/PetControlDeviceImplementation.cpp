@@ -246,27 +246,21 @@ void PetControlDeviceImplementation::callObject(CreatureObject* player, bool ini
                 maxPets = 3;
         }
 
-        for (int i = 0; i < ghost->getActivePetsSize(); ++i) {
+        for (int i = 0; i < ghost->getActivePetsSize(); ++i) { 
                 ManagedReference<AiAgent*> object = ghost->getActivePet(i);
 
                 if (object != nullptr) {
                         if (object->isCreature() && petType == PetManager::CREATUREPET) {
-                                const CreatureTemplate* activePetTemplate = object->getCreatureTemplate();
+                          const CreatureTemplate* activePetTemplate = object->getCreatureTemplate();
 
-                                if (activePetTemplate == nullptr || activePetTemplate->getTemplateName() == "at_st")
-                                    
+                        if (activePetTemplate == nullptr || activePetTemplate->getTemplateName() == "at_st")
+                            continue;
 
-                                spawnedLevel += object->getLevel();
-
-                                if ((spawnedLevel + level) > maxLevelofPets) {
-                                        player->sendSystemMessage("@pet/pet_menu:control_exceeded"); // Calling this pet would exceed your Control Level ability.
-                                        return;
-                                }
-                        } else if (object->isNonPlayerCreatureObject() && petType == PetManager::FACTIONPET) {
-                                if (++currentlySpawned >= maxPets) {
-                                        player->sendSystemMessage("@pet/pet_menu:at_max"); // You already have the maximum number of pets of this type that you can call.
-                                        return;
-                                }
+                        if (++currentlySpawned >= maxPets) {
+                            player->sendSystemMessage("@pet/pet_menu:at_max"); // You already have the maximum number of pets of this type that you can call.
+                            return;
+                        }
+                }
                         } else if (object->isCreature() && petType == PetManager::FACTIONPET) {
                                 const CreatureTemplate* activePetTemplate = object->getCreatureTemplate();
                                 const CreatureTemplate* callingPetTemplate = pet->getCreatureTemplate();
