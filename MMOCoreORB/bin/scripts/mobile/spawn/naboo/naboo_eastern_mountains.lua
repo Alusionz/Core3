@@ -42,7 +42,7 @@ naboo_eastern_mountains = {
 			minDifficulty = 50,
 			maxDifficulty = 500,
 			numberToSpawn = 15,
-			weighting = 10,
+			weighting = 30,
 			size = 20,
 		},
 		{
