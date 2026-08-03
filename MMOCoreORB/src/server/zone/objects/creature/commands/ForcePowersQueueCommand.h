@@ -74,9 +74,12 @@ public:
 			e.printStackTrace();
 		}
 
-		// Increase Visibility for Force Power.
-		if (ghost != nullptr)
+		// Increase Visibility for Force Power + Pre-P9 Jedi TEF on successful Force use.
+		if (ghost != nullptr) {
 			VisibilityManager::instance()->increaseVisibility(creature, visMod);
+			if (!ghost->hasGodMode())
+				ghost->updateLastBhPvpCombatActionTimestamp();
+		}
 
 		return SUCCESS;
 	}
