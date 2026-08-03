@@ -7,13 +7,13 @@ spiderclan_protector = Creature:new {
 	faction = "spider_nightsister",
 	level = 131,
 	chanceHit = 4.75,
-	damageMin = 770,
-	damageMax = 1250,
+	damageMin = 231,
+	damageMax = 375,
 	baseXp = 12424,
 	baseHAM = 30000,
 	baseHAMmax = 38000,
-	armor = 2,
-	resists = {45,95,100,65,100,100,55,100,-1},
+	armor = 1,
+	resists = {45,66,55,45,55,55,38,55,-1},
 	meatType = "",
 	meatAmount = 0,
 	hideType = "",
@@ -37,14 +37,9 @@ spiderclan_protector = Creature:new {
 		}
 	},
 
-	-- Primary and secondary weapon should be different types (rifle/carbine, carbine/pistol, rifle/unarmed, etc)
-	-- Unarmed should be put on secondary unless the mobile doesn't use weapons, in which case "unarmed" should be put primary and "none" as secondary
 	primaryWeapon = "force_sword",
 	secondaryWeapon = "force_sword_ranged",
 	conversationTemplate = "",
-
-	-- primaryAttacks and secondaryAttacks should be separate skill groups specific to the weapon type listed in primaryWeapon and secondaryWeapon
-	-- Use merge() to merge groups in creatureskills.lua together. If a weapon is set to "none", set the attacks variable to empty brackets
 	primaryAttacks = merge(pikemanmaster,swordsmanmaster,fencermaster,brawlermaster,forcewielder),
 	secondaryAttacks = forcewielder
 }
