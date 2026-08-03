@@ -7,13 +7,13 @@ singing_mountain_clan_guardian = Creature:new {
 	faction = "mtn_clan",
 	level = 156,
 	chanceHit = 8.5,
-	damageMin = 895,
-	damageMax = 1500,
+	damageMin = 269,
+	damageMax = 450,
 	baseXp = 14789,
 	baseHAM = 45000,
 	baseHAMmax = 55000,
-	armor = 2,
-  resists = {200,30,30,200,200,200,200,200,-1},
+	armor = 1,
+	resists = {100,30,30,100,100,100,100,100,-1},
 	meatType = "",
 	meatAmount = 0,
 	hideType = "",
@@ -37,14 +37,9 @@ singing_mountain_clan_guardian = Creature:new {
 		}
 	},
 
-	-- Primary and secondary weapon should be different types (rifle/carbine, carbine/pistol, rifle/unarmed, etc)
-	-- Unarmed should be put on secondary unless the mobile doesn't use weapons, in which case "unarmed" should be put primary and "none" as secondary
 	primaryWeapon = "force_sword",
 	secondaryWeapon = "force_sword_ranged",
 	conversationTemplate = "",
-
-	-- primaryAttacks and secondaryAttacks should be separate skill groups specific to the weapon type listed in primaryWeapon and secondaryWeapon
-	-- Use merge() to merge groups in creatureskills.lua together. If a weapon is set to "none", set the attacks variable to empty brackets
 	primaryAttacks = merge(pikemanmaster,swordsmanmaster,fencermaster,brawlermaster,forcewielder),
 	secondaryAttacks = forcewielder
 }
