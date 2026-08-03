@@ -290,6 +290,9 @@ public:
 		ManagedReference<PlayerObject*> playerObject = creature->getPlayerObject();
 		playerObject->setForcePower(playerObject->getForcePower() - getFrsModifiedForceCost(creature));
 		VisibilityManager::instance()->increaseVisibility(creature, visMod);
+		// Pre-P9: Jedi TEF on successful Force buff / defensive ability
+		if (!playerObject->hasGodMode())
+			playerObject->updateLastBhPvpCombatActionTimestamp();
 	}
 
 	void setForceCost(int fc) {
