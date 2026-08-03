@@ -254,12 +254,7 @@ void PetControlDeviceImplementation::callObject(CreatureObject* player, bool ini
                                 const CreatureTemplate* activePetTemplate = object->getCreatureTemplate();
 
                                 if (activePetTemplate == nullptr || activePetTemplate->getTemplateName() == "at_st")
-                                        continue;
-
-                                if (++currentlySpawned >= maxPets) {
-                                        player->sendSystemMessage("@pet/pet_menu:at_max"); // You already have the maximum number of pets of this type that you can call.
-                                        return;
-                                }
+                                    
 
                                 spawnedLevel += object->getLevel();
 
