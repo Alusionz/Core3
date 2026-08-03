@@ -6,7 +6,7 @@ naboo_medium_peko_cental_south_hard = {
 			minDifficulty = 27,
 			maxDifficulty = 81,
 			numberToSpawn = 15,
-			weighting = 15,
+			weighting = 30,
 			size = 25,
 		},
 		{
