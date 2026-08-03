@@ -5,13 +5,13 @@ giant_canyon_krayt_dragon = Creature:new {
 	mobType = MOB_CARNIVORE,
 	level = 300,
 	chanceHit = 30.0,
-	damageMin = 1645,
-	damageMax = 3000,
+	damageMin = 494,
+	damageMax = 900,
 	baseXp = 28549,
 	baseHAM = 170000,
 	baseHAMmax = 210000,
-	armor = 3,
-	resists = {170,170,170,170,130,170,170,170,-1},
+	armor = 2,
+	resists = {85,85,85,85,71,85,85,85,-1},
 	meatType = "meat_carnivore",
 	meatAmount = 1000,
 	hideType = "hide_bristley",
@@ -43,14 +43,9 @@ giant_canyon_krayt_dragon = Creature:new {
 		}
 	},
 
-	-- Primary and secondary weapon should be different types (rifle/carbine, carbine/pistol, rifle/unarmed, etc)
-	-- Unarmed should be put on secondary unless the mobile doesn't use weapons, in which case "unarmed" should be put primary and "none" as secondary
 	primaryWeapon = "unarmed",
 	secondaryWeapon = "none",
 	conversationTemplate = "",
-
-	-- primaryAttacks and secondaryAttacks should be separate skill groups specific to the weapon type listed in primaryWeapon and secondaryWeapon
-	-- Use merge() to merge groups in creatureskills.lua together. If a weapon is set to "none", set the attacks variable to empty brackets
 	primaryAttacks = { {"creatureareaattack","stateAccuracyBonus=50"}, {"creatureareaknockdown","stateAccuracyBonus=50"} },
 	secondaryAttacks = { }
 }
