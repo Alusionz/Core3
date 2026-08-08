@@ -7,7 +7,7 @@ dark_jedi_tier_4 = {
 	lootItems = {
 		{groupTemplate = "armor_attachments", weight = 900000},
 		{groupTemplate = "clothing_attachments", weight = 900000},
-		{groupTemplate = "color_crystals", weight = 1300000},
+		{groupTemplate = "color_crystals_highend", weight = 1300000},
 		{groupTemplate = "holocron_dark", weight = 400000},
 		{groupTemplate = "holocron_light", weight = 400000},
 		{groupTemplate = "melee_weapons", weight = 1100000},
@@ -24,8 +24,3 @@ dark_jedi_tier_4 = {
 }
 
 addLootGroupTemplate("dark_jedi_tier_4", dark_jedi_tier_4)
-
---[[
-mobiles:
-	scripts/mobile/thug/dark_adept.lua	140
-]]--
