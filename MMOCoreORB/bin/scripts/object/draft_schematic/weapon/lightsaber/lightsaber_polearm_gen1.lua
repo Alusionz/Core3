@@ -24,11 +24,11 @@ object_draft_schematic_weapon_lightsaber_lightsaber_polearm_gen1 = object_draft_
    customizationStringNames = {},
    customizationDefaults = {},
 
-   -- Pre-P9 dual-blade: materials + force crystal (use Twin Force Crystal Cluster / color 31)
+   -- Pre-P9 dual-blade: requires Twin Force Crystal Cluster (lance module template)
    ingredientTemplateNames = {"craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n"},
    ingredientTitleNames = {"emitter_shroud", "force_crystal", "activator", "handgrip", "power_field_insulator", "energizers"},
    ingredientSlotType = {0, 1, 0, 0, 0, 0},
-   resourceTypes = {"mineral", "object/tangible/component/weapon/lightsaber/shared_lightsaber_module_force_crystal.iff", "metal", "chemical", "gas", "metal"},
+   resourceTypes = {"mineral", "object/tangible/component/weapon/lightsaber/shared_lightsaber_lance_module_force_crystal.iff", "metal", "chemical", "gas", "metal"},
    resourceQuantities = {25, 1, 24, 40, 40, 40},
    contribution = {100, 200, 100, 100, 100, 100},
 
