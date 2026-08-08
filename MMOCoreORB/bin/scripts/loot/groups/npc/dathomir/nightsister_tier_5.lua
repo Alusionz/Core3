@@ -7,7 +7,7 @@ nightsister_tier_5 = {
 	lootItems = {
 		{groupTemplate = "armor_attachments", weight = 400000},
 		{groupTemplate = "clothing_attachments", weight = 400000},
-		{groupTemplate = "color_crystals", weight = 650000},
+		{groupTemplate = "color_crystals_highend", weight = 650000},
 		{groupTemplate = "junk", weight = 900000},
 		{groupTemplate = "melee_weapons", weight = 1700000},
 		{groupTemplate = "nightsister_common", weight = 2100000},
@@ -22,9 +22,3 @@ nightsister_tier_5 = {
 }
 
 addLootGroupTemplate("nightsister_tier_5", nightsister_tier_5)
-
---[[
-mobiles:
-	scripts/mobile/dathomir/axkva_min.lua	302
-	scripts/mobile/dathomir/nightsister_elder.lua	278
-]]--
