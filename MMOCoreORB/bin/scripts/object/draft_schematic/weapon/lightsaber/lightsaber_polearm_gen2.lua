@@ -24,11 +24,11 @@ object_draft_schematic_weapon_lightsaber_lightsaber_polearm_gen2 = object_draft_
    customizationStringNames = {},
    customizationDefaults = {},
 
-   -- Pre-P9 dual-blade Gen2: materials + force crystal (Twin) + Gen1 dual-blade saber
+   -- Pre-P9 dual-blade Gen2: materials + Twin force crystal + Gen1 dual-blade saber
    ingredientTemplateNames = {"craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n", "craft_weapon_ingredients_n"},
    ingredientTitleNames = {"emitter_shroud", "force_crystal", "activator", "handgrip", "power_field_insulator", "energizers", "previous_generation_lightsaber"},
    ingredientSlotType = {0, 1, 0, 0, 0, 0, 1},
-   resourceTypes = {"metal", "object/tangible/component/weapon/lightsaber/shared_lightsaber_module_force_crystal.iff", "metal_nonferrous", "petrochem_inert", "gas_inert_known", "metal_nonferrous", "object/weapon/melee/polearm/crafted_saber/shared_sword_lightsaber_polearm_gen1.iff"},
+   resourceTypes = {"metal", "object/tangible/component/weapon/lightsaber/shared_lightsaber_lance_module_force_crystal.iff", "metal_nonferrous", "petrochem_inert", "gas_inert_known", "metal_nonferrous", "object/weapon/melee/polearm/crafted_saber/shared_sword_lightsaber_polearm_gen1.iff"},
    resourceQuantities = {30, 1, 42, 20, 42, 42, 1},
    contribution = {100, 200, 100, 100, 100, 100, 100},
 
