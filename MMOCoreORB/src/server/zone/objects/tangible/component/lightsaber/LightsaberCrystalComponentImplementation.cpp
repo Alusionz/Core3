@@ -78,7 +78,8 @@ void LightsaberCrystalComponentImplementation::generateCrystalStats() {
         setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
 
 
-        if (getColor() == 31) {
+      // Pre-P9: all crystals (color + twin) carry power stats  if (getColor() == 31) 
+        {
                 int minStat = crystalData->getMinDamage();
                 int maxStat = crystalData->getMaxDamage();
 
@@ -137,7 +138,8 @@ void LightsaberCrystalComponentImplementation::validateCrystalStats() {
         if (getMaxCondition() > maxStat || getMaxCondition() < minStat)
                 setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
 
-        if(getColor() == 31){
+        // Pre-P9: always validate power stats on all crystals {if(getColor() == 31)
+        {
 
                 minStat = crystalData->getMinDamage();
                 maxStat = crystalData->getMaxDamage();
@@ -308,7 +310,7 @@ void LightsaberCrystalComponentImplementation::fillAttributeList(AttributeListMe
                 }
 
                 // Show power stats only on tuned crystals
-                if (getColor() == 31 && (ownerID != 0 || player->isPrivileged())) {
+                if (ownerID != 0 || player->isPrivileged()) {
                                 alm->insertAttribute("mindamage", damage);
                                 alm->insertAttribute("maxdamage", damage);
                                 alm->insertAttribute("wpn_attack_speed", attackSpeed);
@@ -370,7 +372,7 @@ int LightsaberCrystalComponentImplementation::handleObjectMenuSelect(CreatureObj
 
         PlayerObject* ghost = player->getPlayerObject();
         if (ghost != nullptr && ghost->isPrivileged()){
-                if (selectedID == 130 && getColor() == 31) {
+                if (selectedID == 130) {
                         generateCrystalStats();
                 } else if (selectedID == 131 && ownerID != 0) {
                         ownerID = 0;
@@ -485,7 +487,7 @@ void LightsaberCrystalComponentImplementation::updateCraftingValues(CraftingValu
 
         generateCrystalStats();
 
-        if (getColor() == 31) {  // Power stats only for power or merged crystals
+        //if (getColor() == 31) {  // Power stats only for power or merged crystals
     values->addExperimentalAttribute("mindamage", "weapon", damage, damage, 0, false, 0);
     values->addExperimentalAttribute("maxdamage", "weapon", damage, damage, 0, false, 0);
     values->addExperimentalAttribute("wpn_attack_speed", "weapon", attackSpeed, attackSpeed, 2, false, 0);
@@ -494,7 +496,7 @@ void LightsaberCrystalComponentImplementation::updateCraftingValues(CraftingValu
     values->addExperimentalAttribute("wpn_attack_cost_action", "weapon", sacAction, sacAction, 0, false, 0);
     values->addExperimentalAttribute("wpn_attack_cost_mind", "weapon", sacMind, sacMind, 0, false, 0);
     values->addExperimentalAttribute("forcecost", "weapon", floatForceCost, floatForceCost, 0, false, 0);
-}
+//}
 
         ComponentImplementation::updateCraftingValues(values, firstUpdate);
 }
@@ -510,7 +512,7 @@ int LightsaberCrystalComponentImplementation::inflictDamage(TangibleObject* atta
                 ManagedReference<WeaponObject*> weapon = cast<WeaponObject*>(_this.getReferenceUnsafeStaticCast()->getParent().get()->getParent().get().get());
 
                 if (weapon != nullptr) {
-                        if (getColor() == 31) {
+                        //if (getColor() == 31) {
                                 weapon->setAttackSpeed(weapon->getAttackSpeed() - getAttackSpeed());
                                 weapon->setMinDamage(weapon->getMinDamage() - getDamage());
                                 weapon->setMaxDamage(weapon->getMaxDamage() - getDamage());
@@ -519,7 +521,7 @@ int LightsaberCrystalComponentImplementation::inflictDamage(TangibleObject* atta
                                 weapon->setMindAttackCost(weapon->getMindAttackCost() - getSacMind());
                                 weapon->setWoundsRatio(weapon->getWoundsRatio() - getWoundChance());
                                 weapon->setForceCost(weapon->getForceCost() - getForceCost());
-                        }
+                        //}
 
                         if (getColor() != 31) {
                                 weapon->setBladeColor(31);
@@ -546,7 +548,8 @@ void LightsaberCrystalComponentImplementation::transferStatsToWeapon(WeaponObjec
     Locker crossLocker(_this.getReferenceUnsafeStaticCast());
 
     // Only apply if this is a tuned power crystal
-    if (getColor() != 31 || ownerID == 0) {
+    // Pre-P9: apply power stats from any tuned crystal
+    if (ownerID == 0) {
         return;
     }
 
