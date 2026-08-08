@@ -78,7 +78,7 @@ void LightsaberCrystalComponentImplementation::generateCrystalStats() {
         setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
 
 
-      // Pre-P9: all crystals (color + twin) carry power stats  if (getColor() == 31) 
+      // Pre-P9: all crystals (color + twin) carry power stats 
         {
                 int minStat = crystalData->getMinDamage();
                 int maxStat = crystalData->getMaxDamage();
@@ -138,7 +138,7 @@ void LightsaberCrystalComponentImplementation::validateCrystalStats() {
         if (getMaxCondition() > maxStat || getMaxCondition() < minStat)
                 setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
 
-        // Pre-P9: always validate power stats on all crystals {if(getColor() == 31)
+        // Pre-P9: always validate power stats on all crystals
         {
 
                 minStat = crystalData->getMinDamage();
@@ -346,8 +346,7 @@ void LightsaberCrystalComponentImplementation::fillObjectMenuResponse(ObjectMenu
         if (ghost != nullptr && ghost->isPrivileged()) {
                 menuResponse->addRadialMenuItem(129, 3, "Staff Commands");
 
-                if (getColor() == 31)
-                        menuResponse->addRadialMenuItemToRadialID(129, 130, 3, "Recalculate Stats");
+                menuResponse->addRadialMenuItemToRadialID(129, 130, 3, "Recalculate Stats");
 
                 if (ownerID != 0)
                         menuResponse->addRadialMenuItemToRadialID(129, 131, 3, "Untune Crystal");
