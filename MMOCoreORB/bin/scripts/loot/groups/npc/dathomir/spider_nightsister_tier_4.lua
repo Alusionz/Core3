@@ -7,7 +7,7 @@ spider_nightsister_tier_4 = {
 	lootItems = {
 		{groupTemplate = "armor_attachments", weight = 300000},
 		{groupTemplate = "clothing_attachments", weight = 300000},
-		{groupTemplate = "color_crystals", weight = 400000},
+		{groupTemplate = "color_crystals_highend", weight = 400000},
 		{groupTemplate = "junk", weight = 1300000},
 		{groupTemplate = "melee_weapons", weight = 2400000},
 		--{groupTemplate = "power_crystals", weight = 400000},
@@ -21,10 +21,3 @@ spider_nightsister_tier_4 = {
 }
 
 addLootGroupTemplate("spider_nightsister_tier_4", spider_nightsister_tier_4)
-
---[[
-mobiles:
-	scripts/mobile/dathomir/spiderclan_auspex.lua	107
-	scripts/mobile/dathomir/spiderclan_protector.lua	131
-	scripts/mobile/dathomir/spiderclan_stalker.lua	100
-]]--

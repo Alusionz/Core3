@@ -7,7 +7,7 @@ force_tier_4 = {
 	lootItems = {
 		{groupTemplate = "armor_attachments", weight = 700000},
 		{groupTemplate = "clothing_attachments", weight = 700000},
-		{groupTemplate = "color_crystals", weight = 1400000},
+		{groupTemplate = "color_crystals_highend", weight = 1400000},
 		{groupTemplate = "junk", weight = 3800000},
 		{groupTemplate = "melee_weapons", weight = 1300000},
 		--{groupTemplate = "power_crystals", weight = 400000},
@@ -22,8 +22,3 @@ force_tier_4 = {
 }
 
 addLootGroupTemplate("force_tier_4", force_tier_4)
-
---[[
-mobiles:
-	scripts/mobile/dantooine/feral_force_wielder.lua	115
-]]--
