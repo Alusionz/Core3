@@ -19,493 +19,556 @@
 #include "server/zone/ZoneServer.h"
 
 void LightsaberCrystalComponentImplementation::initializeTransientMembers() {
-        ComponentImplementation::initializeTransientMembers();
+	ComponentImplementation::initializeTransientMembers();
 
-        setLoggingName("LightsaberCrystalComponent");
+	setLoggingName("LightsaberCrystalComponent");
 }
 
 void LightsaberCrystalComponentImplementation::notifyLoadFromDatabase() {
-        // Randomize item level and stats for existing crystals based on original quality value
-        // TODO: Remove this on a server wipe when old variables are removed
-        if (color == 31 && (minimumDamage != maximumDamage || itemLevel == 0)) {
-                if (quality == POOR)
-                        itemLevel = 1 + System::random(38); // 1-39
-                else if (quality == FAIR)
-                        itemLevel = 40 + System::random(29); // 40-69
-                else if (quality == GOOD)
-                        itemLevel = 70 + System::random(29); // 70-99
-                else if (quality == QUALITY)
-                        itemLevel = 100 + System::random(39); // 100-139
-                else if (quality == SELECT)
-                        itemLevel = 140 + System::random(79); // 140-219
-                else if (quality == PREMIUM)
-                        itemLevel = 220 + System::random(109); // 220-329
-                else
-                        itemLevel = 330 + System::random(20);
+	// Randomize item level and stats for existing crystals based on original quality value
+	// TODO: Remove this on a server wipe when old variables are removed
+	if (color == 31 && (minimumDamage != maximumDamage || itemLevel == 0)) {
+		if (quality == POOR)
+			itemLevel = 1 + System::random(38); // 1-39
+		else if (quality == FAIR)
+			itemLevel = 40 + System::random(29); // 40-69
+		else if (quality == GOOD)
+			itemLevel = 70 + System::random(29); // 70-99
+		else if (quality == QUALITY)
+			itemLevel = 100 + System::random(39); // 100-139
+		else if (quality == SELECT)
+			itemLevel = 140 + System::random(79); // 140-219
+		else if (quality == PREMIUM)
+			itemLevel = 220 + System::random(109); // 220-329
+		else
+			itemLevel = 330 + System::random(20);
 
-                attackSpeed = 0.0;
-                minimumDamage = 0;
-                maximumDamage = 0;
-                sacHealth = 0;
-                sacAction = 0;
-                sacMind = 0;
-                woundChance = 0;
-                forceCost = 0;
-                floatForceCost = 0.0;
+		attackSpeed = 0.0;
+		minimumDamage = 0;
+		maximumDamage = 0;
+		sacHealth = 0;
+		sacAction = 0;
+		sacMind = 0;
+		woundChance = 0;
+		forceCost = 0;
+		floatForceCost = 0.0;
 
-                generateCrystalStats();
-        }
+		generateCrystalStats();
+	}
 
-        TangibleObjectImplementation::notifyLoadFromDatabase();
+	TangibleObjectImplementation::notifyLoadFromDatabase();
 }
 
 void LightsaberCrystalComponentImplementation::generateCrystalStats() {
-        ManagedReference<LootManager*> lootManager = getZoneServer()->getLootManager();
+	ManagedReference<LootManager*> lootManager = getZoneServer()->getLootManager();
 
-        if (lootManager == nullptr)
-                return;
+	if (lootManager == nullptr)
+		return;
 
-        const CrystalData* crystalData = lootManager->getCrystalData(getObjectTemplate()->getTemplateFileName());
+	const CrystalData* crystalData = lootManager->getCrystalData(getObjectTemplate()->getTemplateFileName());
 
-        if (crystalData == nullptr) {
-                error("Unable to find crystal stats for " + getObjectTemplate()->getTemplateFileName());
-                return;
-        }
+	if (crystalData == nullptr) {
+		error("Unable to find crystal stats for " + getObjectTemplate()->getTemplateFileName());
+		return;
+	}
 
-        int minStat = crystalData->getMinHitpoints();
-        int maxStat = crystalData->getMaxHitpoints();
+	int minStat = crystalData->getMinHitpoints();
+	int maxStat = crystalData->getMaxHitpoints();
 
-        setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
+	setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
 
-        if (color == 31) {
-                int minStat = crystalData->getMinDamage();
-                int maxStat = crystalData->getMaxDamage();
 
-                damage = getRandomizedStat(minStat, maxStat, itemLevel);
+	if (getColor() == 31) {
+		int minStat = crystalData->getMinDamage();
+		int maxStat = crystalData->getMaxDamage();
 
-                minStat = crystalData->getMinHealthSac();
-                maxStat = crystalData->getMaxHealthSac();
+		damage = getRandomizedStat(minStat, maxStat, itemLevel);
 
-                sacHealth = getRandomizedStat(minStat, maxStat, itemLevel);
+		minStat = crystalData->getMinHealthSac();
+		maxStat = crystalData->getMaxHealthSac();
 
-                minStat = crystalData->getMinActionSac();
-                maxStat = crystalData->getMaxActionSac();
+		sacHealth = getRandomizedStat(minStat, maxStat, itemLevel);
 
-                sacAction = getRandomizedStat(minStat, maxStat, itemLevel);
+		minStat = crystalData->getMinActionSac();
+		maxStat = crystalData->getMaxActionSac();
 
-                minStat = crystalData->getMinMindSac();
-                maxStat = crystalData->getMaxMindSac();
+		sacAction = getRandomizedStat(minStat, maxStat, itemLevel);
 
-                sacMind = getRandomizedStat(minStat, maxStat, itemLevel);
+		minStat = crystalData->getMinMindSac();
+		maxStat = crystalData->getMaxMindSac();
 
-                minStat = crystalData->getMinWoundChance();
-                maxStat = crystalData->getMaxWoundChance();
+		sacMind = getRandomizedStat(minStat, maxStat, itemLevel);
 
-                woundChance = getRandomizedStat(minStat, maxStat, itemLevel);
+		minStat = crystalData->getMinWoundChance();
+		maxStat = crystalData->getMaxWoundChance();
 
-                float minFloatStat = crystalData->getMinForceCost();
-                float maxFloatStat = crystalData->getMaxForceCost();
+		woundChance = getRandomizedStat(minStat, maxStat, itemLevel);
 
-                floatForceCost = getRandomizedStat(minFloatStat, maxFloatStat, itemLevel);
+		float minFloatStat = crystalData->getMinForceCost();
+		float maxFloatStat = crystalData->getMaxForceCost();
 
-                minFloatStat = crystalData->getMinAttackSpeed();
-                maxFloatStat = crystalData->getMaxAttackSpeed();
+		floatForceCost = getRandomizedStat(minFloatStat, maxFloatStat, itemLevel);
 
-                attackSpeed = Math::getPrecision(getRandomizedStat(minFloatStat, maxFloatStat, itemLevel), 2);
-        }
+		minFloatStat = crystalData->getMinAttackSpeed();
+		maxFloatStat = crystalData->getMaxAttackSpeed();
 
-        quality = getCrystalQuality();
+		attackSpeed = Math::getPrecision(getRandomizedStat(minFloatStat, maxFloatStat, itemLevel), 2);
+	}
+
+	quality = getCrystalQuality();
 }
 
 void LightsaberCrystalComponentImplementation::validateCrystalStats() {
-        ManagedReference<LootManager*> lootManager = getZoneServer()->getLootManager();
+	ManagedReference<LootManager*> lootManager = getZoneServer()->getLootManager();
 
-        if (lootManager == nullptr)
-                return;
+	if (lootManager == nullptr)
+		return;
 
-        const CrystalData* crystalData = lootManager->getCrystalData(getObjectTemplate()->getTemplateFileName());
+	const CrystalData* crystalData = lootManager->getCrystalData(getObjectTemplate()->getTemplateFileName());
 
-        if (crystalData == nullptr) {
-                error("Unable to find crystal stats for " + getObjectTemplate()->getTemplateFileName());
-                return;
-        }
+	if (crystalData == nullptr) {
+		error("Unable to find crystal stats for " + getObjectTemplate()->getTemplateFileName());
+		return;
+	}
 
-        int minStat = crystalData->getMinHitpoints();
-        int maxStat = crystalData->getMaxHitpoints();
+	int minStat = crystalData->getMinHitpoints();
+	int maxStat = crystalData->getMaxHitpoints();
 
-        if (getMaxCondition() > maxStat || getMaxCondition() < minStat)
-                setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
+	if (getMaxCondition() > maxStat || getMaxCondition() < minStat)
+		setMaxCondition(getRandomizedStat(minStat, maxStat, itemLevel));
 
-        if (color == 31) {
-                minStat = crystalData->getMinDamage();
-                maxStat = crystalData->getMaxDamage();
+	if(getColor() == 31){
 
-                if (damage > maxStat || damage < minStat)
-                        damage = getRandomizedStat(minStat, maxStat, itemLevel);
+		minStat = crystalData->getMinDamage();
+		maxStat = crystalData->getMaxDamage();
 
-                minStat = crystalData->getMinHealthSac();
-                maxStat = crystalData->getMaxHealthSac();
+		if (damage > maxStat || damage < minStat)
+			damage = getRandomizedStat(minStat, maxStat, itemLevel);
 
-                if (sacHealth > maxStat || sacHealth < minStat)
-                        sacHealth = getRandomizedStat(minStat, maxStat, itemLevel);
+		minStat = crystalData->getMinHealthSac();
+		maxStat = crystalData->getMaxHealthSac();
 
-                minStat = crystalData->getMinActionSac();
-                maxStat = crystalData->getMaxActionSac();
+		if (sacHealth > maxStat || sacHealth < minStat)
+			sacHealth = getRandomizedStat(minStat, maxStat, itemLevel);
 
-                if (sacAction > maxStat || sacAction < minStat)
-                        sacAction = getRandomizedStat(minStat, maxStat, itemLevel);
+		minStat = crystalData->getMinActionSac();
+		maxStat = crystalData->getMaxActionSac();
 
-                minStat = crystalData->getMinMindSac();
-                maxStat = crystalData->getMaxMindSac();
+		if (sacAction > maxStat || sacAction < minStat)
+			sacAction = getRandomizedStat(minStat, maxStat, itemLevel);
 
-                if (sacMind > maxStat || sacMind < minStat)
-                        sacMind = getRandomizedStat(minStat, maxStat, itemLevel);
+		minStat = crystalData->getMinMindSac();
+		maxStat = crystalData->getMaxMindSac();
 
-                minStat = crystalData->getMinWoundChance();
-                maxStat = crystalData->getMaxWoundChance();
+		if (sacMind > maxStat || sacMind < minStat)
+			sacMind = getRandomizedStat(minStat, maxStat, itemLevel);
 
-                if (woundChance > maxStat || woundChance < minStat)
-                        woundChance = getRandomizedStat(minStat, maxStat, itemLevel);
+		minStat = crystalData->getMinWoundChance();
+		maxStat = crystalData->getMaxWoundChance();
 
-                float minFloatStat = crystalData->getMinForceCost();
-                float maxFloatStat = crystalData->getMaxForceCost();
+		if (woundChance > maxStat || woundChance < minStat)
+			woundChance = getRandomizedStat(minStat, maxStat, itemLevel);
 
-                if (floatForceCost > maxFloatStat || floatForceCost < minFloatStat)
-                        floatForceCost = getRandomizedStat(minFloatStat, maxFloatStat, itemLevel);
+		float minFloatStat = crystalData->getMinForceCost();
+		float maxFloatStat = crystalData->getMaxForceCost();
 
-                minFloatStat = crystalData->getMinAttackSpeed();
-                maxFloatStat = crystalData->getMaxAttackSpeed();
+		if (floatForceCost > maxFloatStat || floatForceCost < minFloatStat)
+			floatForceCost = getRandomizedStat(minFloatStat, maxFloatStat, itemLevel);
 
-                if (attackSpeed > maxFloatStat || attackSpeed < minFloatStat)
-                        attackSpeed = Math::getPrecision(getRandomizedStat(minFloatStat, maxFloatStat, itemLevel), 2);
-        }
+		minFloatStat = crystalData->getMinAttackSpeed();
+		maxFloatStat = crystalData->getMaxAttackSpeed();
+
+		if (attackSpeed > maxFloatStat || attackSpeed < minFloatStat)
+			attackSpeed = Math::getPrecision(getRandomizedStat(minFloatStat, maxFloatStat, itemLevel), 2);
+
+	}
 }
 
 int LightsaberCrystalComponentImplementation::getCrystalQuality() {
-        if (itemLevel < 40)
-                return POOR;
-        else if (itemLevel < 70)
-                return FAIR;
-        else if (itemLevel < 100)
-                return GOOD;
-        else if (itemLevel < 140)
-                return QUALITY;
-        else if (itemLevel < 220)
-                return SELECT;
-        else if (itemLevel < 330)
-                return PREMIUM;
-        else
-                return FLAWLESS;
+	if (itemLevel < 40)
+		return POOR;
+	else if (itemLevel < 70)
+		return FAIR;
+	else if (itemLevel < 100)
+		return GOOD;
+	else if (itemLevel < 140)
+		return QUALITY;
+	else if (itemLevel < 220)
+		return SELECT;
+	else if (itemLevel < 330)
+		return PREMIUM;
+	else
+		return FLAWLESS;
 }
 
 int LightsaberCrystalComponentImplementation::getRandomizedStat(int min, int max, int itemLevel) {
-        bool invertedValues = false;
-        int invertedMin = min;
-        int invertedMax = max;
+	bool invertedValues = false;
+	int invertedMin = min;
+	int invertedMax = max;
 
-        if (min > max) {
-                int temp = min;
-                min = max;
-                max = temp;
+	if (min > max) {
+		int temp = min;
+		min = max;
+		max = temp;
 
-                invertedValues = true;
-        }
+		invertedValues = true;
+	}
 
-        float avgLevel = (float)(itemLevel - 60) / 220.f;
+	float avgLevel = (float)(itemLevel - 60) / 220.f;
 
-        float midLevel = min + ((max - min) * avgLevel);
+	float midLevel = min + ((max - min) * avgLevel);
 
-        if (midLevel < min) {
-                max += (midLevel - min);
-                midLevel = min;
-        }
+	if (midLevel < min) {
+		max += (midLevel - min);
+		midLevel = min;
+	}
 
-        if (midLevel > max) {
-                min += (midLevel - max);
-                midLevel = max;
-        }
+	if (midLevel > max) {
+		min += (midLevel - max);
+		midLevel = max;
+	}
 
-        int randMin = min + System::random((int)(midLevel + 0.5f) - min);
-        int randMax = (int)(midLevel + 0.5f) + System::random(max - midLevel);
+	int randMin = min + System::random((int)(midLevel + 0.5f) - min);
+	int randMax = (int)(midLevel + 0.5f) + System::random(max - midLevel);
 
-        int result = randMin + System::random(randMax - randMin);
+	int result = randMin + System::random(randMax - randMin);
 
-        if (invertedValues)
-                result = invertedMin + (invertedMax - result);
+	if (invertedValues)
+		result = invertedMin + (invertedMax - result);
 
-        return result;
+	return result;
 }
 
 float LightsaberCrystalComponentImplementation::getRandomizedStat(float min, float max, int itemLevel) {
-        bool invertedValues = false;
-        float invertedMin = min;
-        float invertedMax = max;
+	bool invertedValues = false;
+	float invertedMin = min;
+	float invertedMax = max;
 
-        if (min > max) {
-                float temp = min;
-                min = max;
-                max = temp;
+	if (min > max) {
+		float temp = min;
+		min = max;
+		max = temp;
 
-                invertedValues = true;
-        }
+		invertedValues = true;
+	}
 
-        float avgLevel = (float)(itemLevel - 60) / 220.f;
+	float avgLevel = (float)(itemLevel - 60) / 220.f;
 
-        float midLevel = min + ((max - min) * avgLevel);
+	float midLevel = min + ((max - min) * avgLevel);
 
-        if (midLevel < min) {
-                max += (midLevel - min);
-                midLevel = min;
-        }
+	if (midLevel < min) {
+		max += (midLevel - min);
+		midLevel = min;
+	}
 
-        if (midLevel > max) {
-                min += (midLevel - max);
-                midLevel = max;
-        }
+	if (midLevel > max) {
+		min += (midLevel - max);
+		midLevel = max;
+	}
 
-        float randMin = System::getMTRand()->rand(midLevel - min) + min;
-        float randMax = System::getMTRand()->rand(max - midLevel) + midLevel;
+	float randMin = System::getMTRand()->rand(midLevel - min) + min;
+	float randMax = System::getMTRand()->rand(max - midLevel) + midLevel;
 
-        float result = System::getMTRand()->rand(randMax - randMin) + randMin;
+	float result = System::getMTRand()->rand(randMax - randMin) + randMin;
 
-        if (invertedValues)
-                result = invertedMin + (invertedMax - result);
+	if (invertedValues)
+		result = invertedMin + (invertedMax - result);
 
-        return result;
+	return result;
 }
 
 void LightsaberCrystalComponentImplementation::fillAttributeList(AttributeListMessage* alm, CreatureObject* object) {
-        TangibleObjectImplementation::fillAttributeList(alm, object);
+	TangibleObjectImplementation::fillAttributeList(alm, object);
 
-        if (object == nullptr) {
-                return;
-        }
+	if (object == nullptr) {
+		return;
+	}
 
-        PlayerObject* player = object->getPlayerObject();
-        if (object->hasSkill("force_title_jedi_rank_01") || player->isPrivileged()) {
-                if (ownerID == 0) {
-                        StringBuffer str;
-                        str << "\\#pcontrast2 UNTUNED";
-                        alm->insertAttribute("crystal_owner", str);
-                } else {
-                        alm->insertAttribute("crystal_owner", ownerName);
-                }
+	PlayerObject* player = object->getPlayerObject();
+	if (object->hasSkill("force_title_jedi_rank_01") || player->isPrivileged()) {
+		if (ownerID == 0) {
+			StringBuffer str;
+			str << "\\#pcontrast2 UNTUNED";
+			alm->insertAttribute("crystal_owner", str);
+		} else {
+			alm->insertAttribute("crystal_owner", ownerName);
+		}
+		
+		// Show visible blade color from customization variable (preserved on tuning)
+		int bladeColorIndex = 31; //default
+		
+		if(customizationVariables.contains((uint8)0x02)) {
+			bladeColorIndex = customizationVariables.get((uint8)0x02);
+		}
 
-                if (getColor() != 31) {
-                        StringBuffer str3;
-                        str3 << "@jedi_spam:saber_color_" << getColor();
-                        alm->insertAttribute("color", str3);
-                } else {
-                        if (ownerID != 0 || player->isPrivileged()) {
-                                alm->insertAttribute("mindamage", damage);
-                                alm->insertAttribute("maxdamage", damage);
-                                alm->insertAttribute("wpn_attack_speed", attackSpeed);
-                                alm->insertAttribute("wpn_wound_chance", woundChance);
-                                alm->insertAttribute("wpn_attack_cost_health", sacHealth);
-                                alm->insertAttribute("wpn_attack_cost_action", sacAction);
-                                alm->insertAttribute("wpn_attack_cost_mind", sacMind);
-                                alm->insertAttribute("forcecost", (int)getForceCost());
+		if (bladeColorIndex != 31) {
+			StringBuffer str3;
+			str3 << "@jedi_spam:saber_color_" << bladeColorIndex;
+			alm->insertAttribute("color", str3);
+		}
 
-                                // For debugging
-                                if (player->isPrivileged()) {
-                                        StringBuffer str;
-                                        str << "@jedi_spam:crystal_quality_" << getQuality();
-                                        alm->insertAttribute("challenge_level", itemLevel);
-                                        alm->insertAttribute("crystal_quality", str);
-                                }
-                        } else {
-                                StringBuffer str;
-                                str << "@jedi_spam:crystal_quality_" << getQuality();
-                                alm->insertAttribute("crystal_quality", str);
-                        }
-                }
-        }
+		// Show power stats only on tuned crystals
+		if (getColor() == 31 && (ownerID != 0 || player->isPrivileged())) {
+				alm->insertAttribute("mindamage", damage);
+				alm->insertAttribute("maxdamage", damage);
+				alm->insertAttribute("wpn_attack_speed", attackSpeed);
+				alm->insertAttribute("wpn_wound_chance", woundChance);
+				alm->insertAttribute("wpn_attack_cost_health", sacHealth);
+				alm->insertAttribute("wpn_attack_cost_action", sacAction);
+				alm->insertAttribute("wpn_attack_cost_mind", sacMind);
+				alm->insertAttribute("forcecost", (int)getForceCost());
+
+				// For debugging
+				if (player->isPrivileged()) {
+					StringBuffer str;
+					str << "@jedi_spam:crystal_quality_" << getQuality();
+					alm->insertAttribute("challenge_level", itemLevel);
+					alm->insertAttribute("crystal_quality", str);
+				}
+			}
+			if(ownerID == 0) {
+				StringBuffer str;
+				str << "@jedi_spam:crystal_quality_" << getQuality();
+				alm->insertAttribute("crystal_quality", str);
+			}
+	}
 }
 
 void LightsaberCrystalComponentImplementation::fillObjectMenuResponse(ObjectMenuResponse* menuResponse, CreatureObject* player) {
-        if (ownerID == 0 && player->hasSkill("force_title_jedi_rank_01") && hasPlayerAsParent(player)) {
-                String text = "@jedi_spam:tune_crystal";
-                menuResponse->addRadialMenuItem(128, 3, text);
-        }
+	if (ownerID == 0 && player->hasSkill("force_title_jedi_rank_01") && hasPlayerAsParent(player)) {
+		String text = "@jedi_spam:tune_crystal";
+		menuResponse->addRadialMenuItem(128, 3, text);
+	}
 
-        PlayerObject* ghost = player->getPlayerObject();
-        if (ghost != nullptr && ghost->isPrivileged()) {
-                menuResponse->addRadialMenuItem(129, 3, "Staff Commands");
+	PlayerObject* ghost = player->getPlayerObject();
+	if (ghost != nullptr && ghost->isPrivileged()) {
+		menuResponse->addRadialMenuItem(129, 3, "Staff Commands");
 
-                if (getColor() == 31)
-                        menuResponse->addRadialMenuItemToRadialID(129, 130, 3, "Recalculate Stats");
+		if (getColor() == 31)
+			menuResponse->addRadialMenuItemToRadialID(129, 130, 3, "Recalculate Stats");
 
-                if (ownerID != 0)
-                        menuResponse->addRadialMenuItemToRadialID(129, 131, 3, "Untune Crystal");
-        }
+		if (ownerID != 0)
+			menuResponse->addRadialMenuItemToRadialID(129, 131, 3, "Untune Crystal");
+	}
 
-        ComponentImplementation::fillObjectMenuResponse(menuResponse, player);
+	ComponentImplementation::fillObjectMenuResponse(menuResponse, player);
 }
 
 int LightsaberCrystalComponentImplementation::handleObjectMenuSelect(CreatureObject* player, byte selectedID) {
-        if (selectedID == 128 && player->hasSkill("force_title_jedi_rank_01") && hasPlayerAsParent(player) && ownerID == 0) {
-                ManagedReference<SuiMessageBox*> suiMessageBox = new SuiMessageBox(player, SuiWindowType::TUNE_CRYSTAL);
+	if (selectedID == 128 && player->hasSkill("force_title_jedi_rank_01") && hasPlayerAsParent(player) && ownerID == 0) {
+		ManagedReference<SuiMessageBox*> suiMessageBox = new SuiMessageBox(player, SuiWindowType::TUNE_CRYSTAL);
 
-                suiMessageBox->setPromptTitle("@jedi_spam:confirm_tune_title");
-                suiMessageBox->setPromptText("@jedi_spam:confirm_tune_prompt");
-                suiMessageBox->setCancelButton(true, "Cancel");
-                suiMessageBox->setUsingObject(_this.getReferenceUnsafeStaticCast());
-                suiMessageBox->setCallback(new LightsaberCrystalTuneSuiCallback(player->getZoneServer()));
+		suiMessageBox->setPromptTitle("@jedi_spam:confirm_tune_title");
+		suiMessageBox->setPromptText("@jedi_spam:confirm_tune_prompt");
+		suiMessageBox->setCancelButton(true, "Cancel");
+		suiMessageBox->setUsingObject(_this.getReferenceUnsafeStaticCast());
+		suiMessageBox->setCallback(new LightsaberCrystalTuneSuiCallback(player->getZoneServer()));
 
-                player->getPlayerObject()->addSuiBox(suiMessageBox);
-                player->sendMessage(suiMessageBox->generateMessage());
-        }
+		player->getPlayerObject()->addSuiBox(suiMessageBox);
+		player->sendMessage(suiMessageBox->generateMessage());
+	}
 
-        PlayerObject* ghost = player->getPlayerObject();
-        if (ghost != nullptr && ghost->isPrivileged()){
-                if (selectedID == 130 && getColor() == 31) {
-                        generateCrystalStats();
-                } else if (selectedID == 131 && ownerID != 0) {
-                        ownerID = 0;
+	PlayerObject* ghost = player->getPlayerObject();
+	if (ghost != nullptr && ghost->isPrivileged()){
+		if (selectedID == 130 && getColor() == 31) {
+			generateCrystalStats();
+		} else if (selectedID == 131 && ownerID != 0) {
+			ownerID = 0;
 
-                        String tuneName = StringIdManager::instance()->getStringId(objectName.getFullPath().hashCode()).toString();
-                        if (getCustomObjectName().toString().contains("(Exceptional)"))
-                                tuneName = tuneName + " (Exceptional)\\#.";
-                        else if (getCustomObjectName().toString().contains("(Legendary)"))
-                                tuneName = tuneName + " (Legendary)\\#.";
-                        else
-                                tuneName = tuneName + "\\#.";
-                }
-        }
+			String tuneName = StringIdManager::instance()->getStringId(objectName.getFullPath().hashCode()).toString();
+			if (getCustomObjectName().toString().contains("(Exceptional)"))
+				tuneName = tuneName + " (Exceptional)\\#.";
+			else if (getCustomObjectName().toString().contains("(Legendary)"))
+				tuneName = tuneName + " (Legendary)\\#.";
+			else
+				tuneName = tuneName + "\\#.";
+		}
+	}
 
-        return 0;
+	return 0;
 }
 
 bool LightsaberCrystalComponentImplementation::hasPlayerAsParent(CreatureObject* player) {
-        ManagedReference<SceneObject*> wearableParent = getParentRecursively(SceneObjectType::WEARABLECONTAINER);
-        SceneObject* inventory = player->getSlottedObject("inventory");
-        SceneObject* bank = player->getSlottedObject("bank");
+	ManagedReference<SceneObject*> wearableParent = getParentRecursively(SceneObjectType::WEARABLECONTAINER);
+	SceneObject* inventory = player->getSlottedObject("inventory");
+	SceneObject* bank = player->getSlottedObject("bank");
 
-        // Check if crystal is inside a wearable container in bank or inventory
-        if (wearableParent != nullptr) {
-                ManagedReference<WearableContainerObject*> wearable = cast<WearableContainerObject*>(wearableParent.get());
+	// Check if crystal is inside a wearable container in bank or inventory
+	if (wearableParent != nullptr) {
+		ManagedReference<WearableContainerObject*> wearable = cast<WearableContainerObject*>(wearableParent.get());
 
-                if (wearable != nullptr) {
-                        SceneObject* parentOfWearableParent = wearable->getParent().get();
+		if (wearable != nullptr) {
+			SceneObject* parentOfWearableParent = wearable->getParent().get();
 
-                        if (parentOfWearableParent == inventory || parentOfWearableParent == bank)
-                                return true;
-                }
-        } else {
-                // Check if crystal is in inventory or bank
-                SceneObject* thisParent = getParent().get();
+			if (parentOfWearableParent == inventory || parentOfWearableParent == bank)
+				return true;
+		}
+	} else {
+		// Check if crystal is in inventory or bank
+		SceneObject* thisParent = getParent().get();
 
-                if (thisParent == inventory || thisParent == bank)
-                        return true;
-        }
-        return false;
+		if (thisParent == inventory || thisParent == bank)
+			return true;
+	}
+	return false;
 }
 
 void LightsaberCrystalComponentImplementation::tuneCrystal(CreatureObject* player) {
-        if(!player->hasSkill("force_title_jedi_rank_01") || !hasPlayerAsParent(player)) {
-                return;
-        }
+	if(!player->hasSkill("force_title_jedi_rank_01") || !hasPlayerAsParent(player)) {
+		return;
+	}
+	ManagedReference<PlayerObject*> ghost = player->getPlayerObject();
+	if (ghost == nullptr)
+			return;
 
-        if (getColor() == 31) {
-                ManagedReference<PlayerObject*> ghost = player->getPlayerObject();
+	int tuningCost = 100 + (quality * 75);
+	if (ghost->getForcePower() <= tuningCost) {
+		player->sendSystemMessage("@jedi_spam:no_force_power");
+		return;
+	}		
+	ghost->setForcePower(ghost->getForcePower() - tuningCost);
+	
 
-                if (ghost == nullptr)
-                        return;
+	if (ownerID == 0) {
+		validateCrystalStats();
 
-                int tuningCost = 100 + (quality * 75);
+		ownerID = player->getObjectID();
+		ownerName = player->getDisplayedName();
 
-                if (ghost->getForcePower() <= tuningCost) {
-                        player->sendSystemMessage("@jedi_spam:no_force_power");
-                        return;
-                }
+		// NEW: Mark as power-capable by setting internal color to 31 (triggers all power logic)
+		// But do NOT call updateCrystal(31) — this prevents overriding the visible blade color customization
+		setColor(31);  // Internal flag only	
 
-                ghost->setForcePower(ghost->getForcePower() - tuningCost);
-        }
+		// Regenerate stats now that it's "power" type
+		generateCrystalStats();	//Regenerate crystal stats
 
-        if (ownerID == 0) {
-                validateCrystalStats();
+		// Color code is lime green.
+		String tuneName = StringIdManager::instance()->getStringId(objectName.getFullPath().hashCode()).toString();
+		if (getCustomObjectName().toString().contains("(Exceptional)"))
+			tuneName = "\\#00FF00" + tuneName + " (Exceptional) (tuned)\\#.";
+		else if (getCustomObjectName().toString().contains("(Legendary)"))
+			tuneName = "\\#00FF00" + tuneName + " (Legendary) (tuned)\\#.";
+		else
+			tuneName = "\\#00FF00" + tuneName + " (tuned)\\#.";
 
-                ownerID = player->getObjectID();
-                ownerName = player->getDisplayedName();
+		setCustomObjectName(tuneName, true);
 
-                // Color code is lime green.
-                String tuneName = StringIdManager::instance()->getStringId(objectName.getFullPath().hashCode()).toString();
-                if (getCustomObjectName().toString().contains("(Exceptional)"))
-                        tuneName = "\\#00FF00" + tuneName + " (Exceptional) (tuned)\\#.";
-                else if (getCustomObjectName().toString().contains("(Legendary)"))
-                        tuneName = "\\#00FF00" + tuneName + " (Legendary) (tuned)\\#.";
-                else
-                        tuneName = "\\#00FF00" + tuneName + " (tuned)\\#.";
+		broadcastObject(_this.getReferenceUnsafeStaticCast(), true);
 
-                setCustomObjectName(tuneName, true);
-                player->notifyObservers(ObserverEventType::TUNEDCRYSTAL, _this.getReferenceUnsafeStaticCast(), 0);
-                player->sendSystemMessage("@jedi_spam:crystal_tune_success");
-        }
+		player->notifyObservers(ObserverEventType::TUNEDCRYSTAL, _this.getReferenceUnsafeStaticCast(), 0);
+		player->sendSystemMessage("@jedi_spam:crystal_tune_success");
+	}
 }
 
 void LightsaberCrystalComponentImplementation::updateCrystal(int value){
-        byte type = 0x02;
-        setCustomizationVariable(type, value, true);
+	byte type = 0x02;
+	setCustomizationVariable(type, value, true);
 }
 
 void LightsaberCrystalComponentImplementation::updateCraftingValues(CraftingValues* values, bool firstUpdate) {
-        int colorMax = values->getMaxValue("color");
-        int color = values->getCurrentValue("color");
+	int colorMax = values->getMaxValue("color");
+	int color = values->getCurrentValue("color");
 
-        if (colorMax != 31) {
-                int finalColor = Math::min(color, 11);
-                setColor(finalColor);
-                updateCrystal(finalColor);
-        } else {
-                setColor(31);
-                updateCrystal(31);
-        }
+	if (colorMax != 31) {
+		int finalColor = Math::min(color, 11);
+		setColor(finalColor);
+		updateCrystal(finalColor);
+	} else {
+		setColor(31);
+		updateCrystal(31);
+	}
 
-        if (values->hasExperimentalAttribute("creatureLevel")) {
-                int level = values->getCurrentValue("creatureLevel");
-                setItemLevel(level);
-        }
+	if (values->hasExperimentalAttribute("creatureLevel")) {
+		int level = values->getCurrentValue("creatureLevel");
+		setItemLevel(level);
+	}
 
-        generateCrystalStats();
+	generateCrystalStats();
 
-        ComponentImplementation::updateCraftingValues(values, firstUpdate);
+	if (getColor() == 31) {  // Power stats only for power or merged crystals
+    values->addExperimentalAttribute("mindamage", "weapon", damage, damage, 0, false, 0);
+    values->addExperimentalAttribute("maxdamage", "weapon", damage, damage, 0, false, 0);
+    values->addExperimentalAttribute("wpn_attack_speed", "weapon", attackSpeed, attackSpeed, 2, false, 0);
+    values->addExperimentalAttribute("wpn_wound_chance", "weapon", woundChance, woundChance, 1, false, 0);
+    values->addExperimentalAttribute("wpn_attack_cost_health", "weapon", sacHealth, sacHealth, 0, false, 0);
+    values->addExperimentalAttribute("wpn_attack_cost_action", "weapon", sacAction, sacAction, 0, false, 0);
+    values->addExperimentalAttribute("wpn_attack_cost_mind", "weapon", sacMind, sacMind, 0, false, 0);
+    values->addExperimentalAttribute("forcecost", "weapon", floatForceCost, floatForceCost, 0, false, 0);
+}
+
+	ComponentImplementation::updateCraftingValues(values, firstUpdate);
 }
 
 int LightsaberCrystalComponentImplementation::inflictDamage(TangibleObject* attacker, int damageType, float damage, bool destroy, bool notifyClient) {
-        if (isDestroyed()) {
-                return 0;
-        }
+	if (isDestroyed()) {
+		return 0;
+	}
 
-        TangibleObjectImplementation::inflictDamage(attacker, damageType, damage, destroy, notifyClient);
+	TangibleObjectImplementation::inflictDamage(attacker, damageType, damage, destroy, notifyClient);
 
-        if (isDestroyed()) {
-                ManagedReference<WeaponObject*> weapon = cast<WeaponObject*>(_this.getReferenceUnsafeStaticCast()->getParent().get()->getParent().get().get());
+	if (isDestroyed()) {
+		ManagedReference<WeaponObject*> weapon = cast<WeaponObject*>(_this.getReferenceUnsafeStaticCast()->getParent().get()->getParent().get().get());
 
-                if (weapon != nullptr) {
-                        if (getColor() == 31) {
-                                weapon->setAttackSpeed(weapon->getAttackSpeed() - getAttackSpeed());
-                                weapon->setMinDamage(weapon->getMinDamage() - getDamage());
-                                weapon->setMaxDamage(weapon->getMaxDamage() - getDamage());
-                                weapon->setHealthAttackCost(weapon->getHealthAttackCost() - getSacHealth());
-                                weapon->setActionAttackCost(weapon->getActionAttackCost() - getSacAction());
-                                weapon->setMindAttackCost(weapon->getMindAttackCost() - getSacMind());
-                                weapon->setWoundsRatio(weapon->getWoundsRatio() - getWoundChance());
-                                weapon->setForceCost(weapon->getForceCost() - getForceCost());
-                        }
+		if (weapon != nullptr) {
+			if (getColor() == 31) {
+				weapon->setAttackSpeed(weapon->getAttackSpeed() - getAttackSpeed());
+				weapon->setMinDamage(weapon->getMinDamage() - getDamage());
+				weapon->setMaxDamage(weapon->getMaxDamage() - getDamage());
+				weapon->setHealthAttackCost(weapon->getHealthAttackCost() - getSacHealth());
+				weapon->setActionAttackCost(weapon->getActionAttackCost() - getSacAction());
+				weapon->setMindAttackCost(weapon->getMindAttackCost() - getSacMind());
+				weapon->setWoundsRatio(weapon->getWoundsRatio() - getWoundChance());
+				weapon->setForceCost(weapon->getForceCost() - getForceCost());
+			}
 
-                        if (getColor() != 31) {
-                                weapon->setBladeColor(31);
-                                weapon->setCustomizationVariable("/private/index_color_blade", 31, true);
+			if (getColor() != 31) {
+				weapon->setBladeColor(31);
+				weapon->setCustomizationVariable("/private/index_color_blade", 31, true);
 
-                                if (weapon->isEquipped()) {
-                                        ManagedReference<CreatureObject*> parent = cast<CreatureObject*>(weapon->getParent().get().get());
-                                        ManagedReference<SceneObject*> inventory = parent->getSlottedObject("inventory");
-                                        inventory->transferObject(weapon, -1, true, true);
-                                        parent->sendSystemMessage("@jedi_spam:lightsaber_no_color"); //That lightsaber can not be used until it has a color-modifying Force crystal installed.
-                                }
-                        }
-                }
-        }
+				//if (weapon->isEquipped()) {
+				//	ManagedReference<CreatureObject*> parent = cast<CreatureObject*>(weapon->getParent().get().get());
+				//	ManagedReference<SceneObject*> inventory = parent->getSlottedObject("inventory");
+				//	inventory->transferObject(weapon, -1, true, true);
+				//	parent->sendSystemMessage("@jedi_spam:lightsaber_no_color"); //That lightsaber can not be used until it has a color-modifying Force crystal installed.
+				//}
+			}
+		}
+	}
 
-        return 0;
+	return 0;
+}
+
+void LightsaberCrystalComponentImplementation::transferStatsToWeapon(WeaponObject* lightsaber) {
+    if (lightsaber == nullptr) {
+        return;
+    }
+	
+    Locker crossLocker(_this.getReferenceUnsafeStaticCast());
+
+    // Only apply if this is a tuned power crystal
+    if (getColor() != 31 || ownerID == 0) {
+        return;
+    }
+
+    // Additive bonuses from crystal stats
+    lightsaber->setMinDamage(lightsaber->getMinDamage() + damage);
+    lightsaber->setMaxDamage(lightsaber->getMaxDamage() + damage);
+    lightsaber->setAttackSpeed(lightsaber->getAttackSpeed() + attackSpeed);  // Note: attackSpeed is typically negative for faster attacks
+    lightsaber->setWoundsRatio(lightsaber->getWoundsRatio() + woundChance);
+    lightsaber->setHealthAttackCost(lightsaber->getHealthAttackCost() + sacHealth);
+    lightsaber->setActionAttackCost(lightsaber->getActionAttackCost() + sacAction);
+    lightsaber->setMindAttackCost(lightsaber->getMindAttackCost() + sacMind);
+    lightsaber->setForceCost(lightsaber->getForceCost() + floatForceCost);  // Usually negative for reduction
+
+    // Optional: Apply blade color from the tuned crystal's customization
+    int bladeColorIndex = 31;
+    if (customizationVariables.contains((uint8)0x02)) {
+        bladeColorIndex = customizationVariables.get((uint8)0x02);
+    }
+    if (bladeColorIndex != 31) {
+        lightsaber->setBladeColor(bladeColorIndex);
+        lightsaber->setCustomizationVariable("/private/index_color_blade", bladeColorIndex, true);
+    }
+
+    // If you have elemental type or other custom mods, add here
 }
